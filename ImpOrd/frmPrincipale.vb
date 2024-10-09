@@ -1923,7 +1923,7 @@ Public Class frmPrincipale
     '.Item("Fatturato")=
     '.Item("NOTE")=  
 
-    Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String, ByVal NrVar As String) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
+    Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String, ByVal NrVar As String, ByVal CodTipoVar As String) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
 
         Dim indvar As Integer = 0
         'If Not Varianti Is Nothing Then indvar = Varianti.Length
@@ -1949,7 +1949,7 @@ Public Class frmPrincipale
                         .Item("Codart") = CodArt
                         .Item("Variante") = varqta(1)
                         .Item("Posizione") = NrVar + 1
-                        .Item("CodTipoVariante") = "" 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                        .Item("CodTipoVariante") = CodTipoVar ' gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
                         .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
                     End With
                     dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
@@ -1967,7 +1967,7 @@ Public Class frmPrincipale
                     .Item("Codart") = CodArt
                     .Item("Variante") = VarianteIn
                     .Item("Posizione") = NrVar + 1
-                    .Item("CodTipoVariante") = "" 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar))
+                    .Item("CodTipoVariante") = CodTipoVar 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar))
                     .Item("Qta") = 1
                 End With
                 dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
@@ -1975,6 +1975,37 @@ Public Class frmPrincipale
         End If
 
     End Function
+
+    Private Function GtCodTipoVariante(ByVal NomeModello As String, ByVal PosizioneVar As Integer) As String
+        Dim CodTipoVar As String = ""
+
+        Try
+            If ConnettiEs() Then
+                Dim rs As New ADODB.Recordset
+                Dim schedacod As String = ""
+                rs.Open("Select * From ModelliArtAnagr where codmodelloart='" & NomeModello & "' and dbgruppo='" & DatiGen.DbGruppo & "' ", m_ConnEs)
+                If Not rs.EOF Then
+                    schedacod = rs("SchemaDiCodifica").Value
+                End If
+                rs.Close()
+                If schedacod <> "" Then
+                    rs = New ADODB.Recordset
+                    rs.Open("Select * from SchemaCodifStrutVar where dbgruppo='" & DatiGen.DbGruppo & "' and SchemaDiCodifica='" & schedacod & "' and NumPosizVariante=" & PosizioneVar, m_ConnEs)
+                    If Not rs.EOF Then
+                        CodTipoVar = rs("CodTipoVariante").Value
+                    End If
+                    rs.Close()
+                End If
+                rs = Nothing
+            End If
+            GtCodTipoVariante = CodTipoVar
+            DisconnettiEs()
+        Catch ex As Exception
+            MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
+        End Try
+
+    End Function
+
     Private Function LeggiExcel(ByVal NomeFile As String) As Boolean
         Try
             LeggiExcel = True
@@ -2234,7 +2265,13 @@ Public Class frmPrincipale
                                 'Dim Variante As String = ""
                                 For nrvar As Integer = 0 To 4
                                     If Var(nrvar) <> "" Then
-                                        GetVarianti(dtDatiArtConfVar, RowDTALL.Item("Codart"), Var(nrvar), nrvar) ', Varianti, Qta, Variante)
+                                        Dim CodModello As String = ""
+                                        CodModello = RowDTALL.Item("ModelloComposto")
+
+                                        Dim codtipovar As String = GtCodTipoVariante(CodModello, nrvar + 1)
+
+                                        GetVarianti(dtDatiArtConfVar, RowDTALL.Item("Codart"), Var(nrvar), nrvar, codtipovar) ', Varianti, Qta, Variante)
+                                        GetVarianti(dtDatiArtConfVar, RowDTALL.Item("CodCompo"), Var(nrvar), nrvar, codtipovar) ', VariantiComp, QtaComp, VarianteCom)
                                     End If
                                 Next
 
@@ -2257,7 +2294,8 @@ Public Class frmPrincipale
                             'Dim VariantiComp() As String
                             'Dim QtaComp() As String
                             'Dim VarianteCom As String = ""
-                            GetVarianti(dtDatiArtConfVar, RowDTALL.Item("CodCompo"), RowDTALL.Item("VarCompo1"), 0) ', VariantiComp, QtaComp, VarianteCom)
+
+                            'GetVarianti(dtDatiArtConfVar, RowDTALL.Item("CodCompo"), RowDTALL.Item("VarCompo1"), 0) ', VariantiComp, QtaComp, VarianteCom)
 
                             'If Not VariantiComp Is Nothing Then
                             '    For i As Integer = 0 To VariantiComp.Length - 1
@@ -2394,10 +2432,14 @@ Public Class frmPrincipale
                                 With RowDTOCL
                                     .Item("DbGruppo") = DatiGen.DbGruppo
                                     .Item("ID_T") = IdTes
-                                    .Item("CodTerz") = RowDTALL.Item("CodTerz" & nrocl)
+                                    .Item("CodTerz") = CodTerz
                                     .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
                                     .Item("Qta") = 1
                                     .Item("Costo") = RowDTALL.Item("CostoLav" & nrocl)
+
+                                    .Item("CodComp") = RowDTALL.Item("CodCompo")
+                                    .Item("DescrCompo") = RowDTALL.Item("DesCompo")
+                                    .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
                                 End With
                                 dtDatiOCL.Rows.Add(RowDTOCL)
                             Next
@@ -2429,7 +2471,7 @@ Public Class frmPrincipale
                                     .Item("PrezzoUnit") = 0
                                     .Item("DataConsegnaRich") = ""
                                     If Inserimento Then
-                                        .Item("Note") = RowDTALL.Item("CapoGruppo")
+                                        .Item("Note") = RowDTALL.Item("CapoGruppo") 'perche le note sono sotto la colonna del capogruppo
                                     Else
                                         .Item("Note") = .Item("Note") & "\n " & RowDTALL.Item("CapoGruppo")
                                     End If
