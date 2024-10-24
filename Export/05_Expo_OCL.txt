@@ -1,0 +1,16 @@
+TipoRec#NrORd#CodTerz#CodLavorazione#Qta#Costo#DesEstesa#TipoRiga#Ordinamento#DbGruppo
+TES#1#1##0,00#0,00##0#1_1#DM
+RIG#1#1##0,00#0,00#Lavorazione Prodotto : TOPTEX K357 T-SHIRT 180 gr colore verde lime#20#1_2#DM
+RIG#1#1##0,00#0,00#Lavorazione Prodotto : TOPTEX K358 T-SHIRT 190 gr colore verde lime#20#1_2#DM
+RIG#1#1#<cod.lavorazione>#50,00#1,00##4#1_3#DM
+RIG#1#1#CODLAV1#120,00#1,00##4#1_3#DM
+RIG#1#1#CODLAV2#120,00#1,00##4#1_3#DM
+RIG#1#1#Lavorazione2#50,00#3,00##4#1_3#DM
+TES#3#2##0,00#0,00##0#2_1#DM
+RIG#3#2##0,00#0,00#Lavorazione Prodotto : TOPTEX K357 T-SHIRT 180 gr colore verde lime#20#2_2#DM
+RIG#3#2##0,00#0,00#Lavorazione Prodotto : TOPTEX K358 T-SHIRT 190 gr colore verde lime#20#2_2#DM
+RIG#3#2#<cod.lavorazione>#150,00#3,00##4#2_3#DM
+TES#2#3##0,00#0,00##0#3_1#DM
+RIG#2#3##0,00#0,00#Lavorazione Prodotto : TOPTEX K357 T-SHIRT 180 gr colore verde lime#20#3_2#DM
+RIG#2#3##0,00#0,00#Lavorazione Prodotto : TOPTEX K358 T-SHIRT 190 gr colore verde lime#20#3_2#DM
+RIG#2#3#<cod.lavorazione>#100,00#2,00##4#3_3#DM

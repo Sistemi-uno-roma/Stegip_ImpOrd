@@ -1,0 +1,3 @@
+TipoRec#CodDb#CodArtCompo#Qta#Livello#DbGruppo
+GEN#T-SHIRT 180#TOPTEX K357#1,00##DM
+GEN#T-SHIRT 190#TOPTEX K358#1,00##DM

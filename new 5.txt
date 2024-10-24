@@ -1,0 +1,9 @@
+modello componente =modello composto +'NE'
+codice componente se lo trovo e esiste in anagrafica con codice articolo fornitore prendo il codice articolo 
+se non lo trovo 'NEU'+codice composto +progressivo che leggo dal modello del componente
+
+varianti se non  trovo le varianti del componente le prendo dal composto
+per le lavorazioni ci saranno da mettere le descrizioni per l'ordine
+
+
+

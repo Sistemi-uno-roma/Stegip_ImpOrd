@@ -1,0 +1,16 @@
+TipoRec#CodCli#DataReg#CapoGruppo#CDA#CanaleVendita#Codart#VarArt#Descrizione#Qta#Prezzo#DataConsegnaRich#Annotazioni#Ordinamento#DbGruppo
+TES#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>####0,00#0,00##STAMPA LATO CUORE LA STESSA PER TUTTI I CAPI\n CONSIDERATO IL COSTO DI K2 PER IL TOTALE DELLA QUANTITA' E NON PER I MINIMALI\n 0,95 € ARROTONDATO A 1,00 €#646_1#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;L#T-SHIRT 180 gr#6,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;M#T-SHIRT 180 gr#55,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;S#T-SHIRT 180 gr#1,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;XL#T-SHIRT 180 gr#27,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;XXL#T-SHIRT 180 gr#19,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;XXXL#T-SHIRT 180 gr#6,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 180#VEL;XXXXL#T-SHIRT 180 gr#6,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;L#T-SHIRT 190 gr#6,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;M#T-SHIRT 190 gr#10,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;S#T-SHIRT 190 gr#2,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;XL#T-SHIRT 190 gr#2,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;XXL#T-SHIRT 190 gr#15,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;XXXL#T-SHIRT 190 gr#10,00#12,90#09/10/2024##646_2#DM
+RIG#646#9/10/2024 00:00:00#<cliente capogruppo>#<cda>#<canale vendita>#T-SHIRT 190#VEL;XXXXL#T-SHIRT 190 gr#5,00#12,90#09/10/2024##646_2#DM
