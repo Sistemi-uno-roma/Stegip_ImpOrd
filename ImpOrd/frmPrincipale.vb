@@ -1923,13 +1923,51 @@ Public Class frmPrincipale
     '.Item("Fatturato")=
     '.Item("NOTE")=  
 
-    Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String, ByVal NrVar As String, ByVal CodTipoVar As String) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
+    Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String,
+                                 ByVal NrVar As String, ByVal CodTipoVar As String, ByVal NrRiga As Long) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
+
+        Dim indvar As Integer = 0
+        Dim Appo() As String = Split(Trim(VarianteIn), ";")
+        For x As Integer = 0 To Appo.Length - 1
+            Dim varqta() As String
+            If Appo(x).Contains("-") = False Then
+                varqta = Split(Trim("1-" & Appo(x)), "-")
+            Else
+                varqta = Split(Trim(Appo(x)), "-")
+            End If
+            For n As Integer = 0 To varqta.Length - 1
+                varqta(n) = Trim(varqta(n))
+            Next
+
+            If varqta.Length > 0 Then
+
+                Dim RowDTArtConfVar As DataRow = dtDatiArtConfVar.NewRow
+                With RowDTArtConfVar
+                    .Item("DbGruppo") = DatiGen.DbGruppo
+                    .Item("NrRiga") = NrRiga
+                    .Item("Codart") = CodArt
+                    .Item("Variante") = varqta(1)
+                    .Item("Posizione") = NrVar + 1
+                    .Item("CodTipoVariante") = CodTipoVar ' gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                    .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                End With
+                dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
+
+                indvar += 1
+            End If
+        Next
+
+
+    End Function
+    Private Function GetVarianti_old(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String,
+                                 ByVal NrVar As String, ByVal CodTipoVar As String, ByVal NrRiga As Long) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
 
         Dim indvar As Integer = 0
         'If Not Varianti Is Nothing Then indvar = Varianti.Length
         If VarianteIn.Contains(";") Then
             Dim Appo() As String = Split(Trim(VarianteIn), ";")
             For x As Integer = 0 To Appo.Length - 1
+
                 Dim varqta() As String
                 If Appo(x).Contains("-") Then
                     varqta = Split(Trim(Appo(x)), "-")
@@ -1946,6 +1984,7 @@ Public Class frmPrincipale
                     Dim RowDTArtConfVar As DataRow = dtDatiArtConfVar.NewRow
                     With RowDTArtConfVar
                         .Item("DbGruppo") = DatiGen.DbGruppo
+                        .Item("NrRiga") = NrRiga
                         .Item("Codart") = CodArt
                         .Item("Variante") = varqta(1)
                         .Item("Posizione") = NrVar + 1
@@ -1995,11 +2034,9 @@ Public Class frmPrincipale
         DisconnettiEs()
     End Function
 
-
     Private Function GetCodiceComponente(ByVal CodCompoFile As String, ByVal SchemaCodCompo As String, ByVal ModelloCompo As String,
                                          ByVal CodArt As String, ByVal CodForn As String) As String 'ByVal NomeModello As String, ByVal schemacod As String, ByVal PosizioneVar As Integer) As String
         Dim CodCompo As String = ""
-        Dim Prog As Long = 1
         Try
             If ConnettiEs() Then
                 Dim rs As New ADODB.Recordset
@@ -2030,20 +2067,7 @@ Public Class frmPrincipale
 
                 'non ho trovato il codice articolo dal codice fornitore : lo genero
                 If CodCompo = "" Then
-                    If SchemaCodCompo = "" Then SchemaCodCompo = GetSchemaCodifica(ModelloCompo)
-
-                    If SchemaCodCompo <> "" Then
-                        rs = New ADODB.Recordset
-                        rs.Open("select UltimoNumUtilizzato  from numeratori where dbgruppo='" & DatiGen.DbGruppo &
-                            "' and tiponumeratore=4 and codnumeratore ='" & SchemaCodCompo & "'  ", m_ConnEs)
-                        If Not rs.EOF Then
-                            Prog = Val(rs("UltimoNumUtilizzato").Value) + 1
-                        End If
-                        rs.Close()
-
-                        CodCompo = "NEU" & CodArt & Prog
-                    End If
-                    rs = Nothing
+                    CodCompo = GetCodice_FUll(SchemaCodCompo, ModelloCompo, CodArt, "NEU")
                 End If
             End If
             GetCodiceComponente = CodCompo
@@ -2053,7 +2077,70 @@ Public Class frmPrincipale
 
         DisconnettiEs()
     End Function
+    Private Function GetCodice_FUll(ByVal SchemaCodArt As String, ByVal ModelloCodart As String,
+                                         ByVal CodArt As String, ByVal Prefisso As String) As String 'ByVal NomeModello As String, ByVal schemacod As String, ByVal PosizioneVar As Integer) As String
+        Dim CodArtFull As String = CodArt
+        Dim Prog As String = "00001"
+        Try
 
+            If CodArt <> "" Then
+                If SchemaCodArt = "" Then SchemaCodArt = GetSchemaCodifica(ModelloCodart)
+                If SchemaCodArt <> "" Then
+                    Prog = GetNumeratoreCodice(SchemaCodArt)
+                End If
+                CodArtFull = Prefisso & CodArt & Prog
+                LogWrite("CodArtFull   :  " & SchemaCodArt & "  - " & Prog & " - " & CodArtFull)
+            End If
+            GetCodice_FUll = CodArtFull
+        Catch ex As Exception
+            MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
+        End Try
+    End Function
+
+    Private Function GetNumeratoreCodice(ByVal SchemaCodifica As String) As String
+
+        Dim Progressivo As String = "00001"
+        Dim Prog As Long = 1
+        Dim NrChar As Integer = 0
+        Try
+
+            If ConnettiEs() Then
+                Dim rs As New ADODB.Recordset
+                rs = New ADODB.Recordset
+                Dim strsql As String = ""
+                strsql = " Select UltimoNumUtilizzato  from numeratori where dbgruppo='" & DatiGen.DbGruppo &
+                    "' and tiponumeratore=4 and codnumeratore ='" & SchemaCodifica & "'  "
+
+
+                strsql = "SELECT   isnull(Numeratori.UltimoNumUtilizzato,0) as UltimoNumUtilizzato,  SchemaCodifStrut.NumCaratteriSegmento 
+                                FROM   Numeratori right JOIN
+                                 SchemaCodifStrut ON Numeratori.DBGruppo = SchemaCodifStrut.DBGruppo AND 
+								 Numeratori.CodNumeratore = SchemaCodifStrut.SchemaDiCodifica
+								 and Numeratori.TipoNumeratore = 4
+                                WHERE        (SchemaCodifStrut.DBGruppo = '" & DatiGen.DbGruppo & "') AND  
+                                (SchemaCodifStrut.ContenutoSegmento  = 4) 
+                                and SchemaCodifStrut.SchemaDiCodifica   ='" & SchemaCodifica & "'"
+
+                rs.Open(strsql, m_ConnEs)
+                If Not rs.EOF Then
+                    Prog = Val(rs("UltimoNumUtilizzato").Value) + 1
+                    NrChar = Val(rs("NumCaratteriSegmento").Value)
+                End If
+                rs.Close()
+                Dim Formato As String = ""
+                Formato = Formato.PadLeft(NrChar, "0")
+                Progressivo = Format(Prog, Formato)
+                LogWrite("PROGRESSIVO SCHEMA :  " & SchemaCodifica & "  - " & Prog & " - " & NrChar & " FORMAT : " & Formato & "  === " & Progressivo)
+            End If
+
+            GetNumeratoreCodice = Progressivo
+        Catch ex As Exception
+            MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
+        End Try
+
+        DisconnettiEs()
+
+    End Function
 
     Private Function GtCodTipoVariante(ByVal NomeModello As String, ByVal schemacod As String, ByVal PosizioneVar As Integer) As String
         Dim CodTipoVar As String = ""
@@ -2269,7 +2356,14 @@ Public Class frmPrincipale
             AggiornaLbl("Caricamento Dati ")
             Dim CodCliTes As String = ""
 
+            Dim NrRiga As Integer = 0
             'parto dalla seconda riga
+
+            Dim Codart As String = ""
+            Dim CodArtOr As String = ""
+            Dim descart As String = ""
+            Dim ModelloArt As String = ""
+            Dim SchemaCodArt As String = ""
             For r As Integer = 1 To ds.Tables(IndTab).Rows.Count - 1
                 Try
                     Dim RowDTALL As DataRow = dtDatiALL.NewRow
@@ -2305,40 +2399,48 @@ Public Class frmPrincipale
                         End With
                         dtDatiALL.Rows.Add(RowDTALL)
 
+                        CodCliTes = CodCli
+                        AggiornaLbl("Caricamento articoli")
                         If Trim(RowDTALL.Item("Codart")) <> "" Then
-                            CodCliTes = CodCli
+                            CodArtOr = ""
+                            Codart = ""
+                            descart = ""
+                            ModelloArt = ""
+                            SchemaCodArt = ""
 
-                            Dim Codart As String = ""
-                            Codart = RowDTALL.Item("Codart")
-                            AggiornaLbl("Caricamento articoli")
-
-                            Dim ModelloArt As String = ""
+                            CodArtOr = RowDTALL.Item("Codart")
                             ModelloArt = RowDTALL.Item("modart")
+                            SchemaCodArt = GetSchemaCodifica(ModelloArt)
+                            descart = RowDTALL.Item("desart")
+                            Codart = GetCodice_FUll(SchemaCodArt, ModelloArt, CodArtOr, "")
+
+                        End If
+
+                        If CodArtOr <> "" Then
+
                             Dim ModelloCompo As String = ""
                             ModelloCompo = RowDTALL.Item("modcomp")
 
                             If ModelloCompo = "" Then
                                 ModelloCompo = "NE" & ModelloArt
                             End If
-
-                            Dim SchemaCodArt As String = ""
-                            SchemaCodArt = GetSchemaCodifica(ModelloArt)
-
                             Dim SchemaCodCompo As String = ""
                             SchemaCodCompo = GetSchemaCodifica(ModelloCompo)
+
 
                             Dim CodCompoForn As String = ""
                             CodCompoForn = RowDTALL.Item("codcomp")
                             Dim CodCompo As String = ""
-                            CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, Codart, RowDTALL.Item("codfor"))
+                            CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, CodArtOr, RowDTALL.Item("codfor"))
                             If CodCompoForn = "" Then CodCompoForn = CodCompo
 
-
+                            NrRiga += 1
                             'articoli
                             With RowDTAna
 
                                 .Item("DbGruppo") = DatiGen.DbGruppo
                                 .Item("Codart") = Codart
+                                .Item("NrRiga") = NrRiga
                                 .Item("Descrizione") = RowDTALL.Item("desart")
                                 .Item("GruppoCodifica") = SchemaCodArt
                                 .Item("TipoArt") = "PF"
@@ -2358,6 +2460,7 @@ Public Class frmPrincipale
                             With RowDTAna
                                 .Item("DbGruppo") = DatiGen.DbGruppo
                                 .Item("Codart") = CodCompo
+                                .Item("NrRiga") = NrRiga
                                 .Item("Descrizione") = RowDTALL.Item("descomp")
                                 .Item("GruppoCodifica") = SchemaCodCompo
                                 .Item("TipoArt") = "MP"
@@ -2403,10 +2506,10 @@ Public Class frmPrincipale
                                     Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
                                     If codtipovar_compo = "" Then codtipovar_compo = codtipovar
                                     If Var(nrvar) <> "" Then
-                                        GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar) ', Varianti, Qta, Variante)
+                                        GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga) ', Varianti, Qta, Variante)
                                     End If
                                     If VarCompo(nrvar) <> "" Then
-                                        GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo) ', VariantiComp, QtaComp, VarianteCom)
+                                        GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga) ', VariantiComp, QtaComp, VarianteCom)
                                     End If
                                 Next
 
@@ -2462,19 +2565,17 @@ Public Class frmPrincipale
 
 
                             Dim IdT As Integer = 1
-                            Dim IdR As Integer = 0
 
                             'ORV
 
 
                             AggiornaLbl("Caricamento ORV")
-                            ' For i As Integer = 0 To Varianti.Length - 1
-                            IdR += 1
+                            ' For i As Integer = 0 To Varianti.Length - 1 
                             RowDTORV = dtDatiORV.NewRow()
                             With RowDTORV
                                 .Item("DbGruppo") = DatiGen.DbGruppo
                                 .Item("ID_T") = IdT
-                                .Item("IDR") = IdR
+                                .Item("IDR") = NrRiga
                                 .Item("CodCli") = RowDTALL.Item("CodCli")
                                 .Item("CapoGruppo") = RowDTALL.Item("clicapo")
                                 .Item("commessa") = RowDTALL.Item("comm")
@@ -2491,16 +2592,14 @@ Public Class frmPrincipale
 
                             'ORA
                             IdT = 1
-                            IdR = 0
 
 
                             AggiornaLbl("Caricamento ORA")
-                            IdR += 1
                             RowDTORA = dtDatiORA.NewRow()
                             With RowDTORA
                                 .Item("DbGruppo") = DatiGen.DbGruppo
                                 .Item("ID_T") = IdT
-                                .Item("IDR") = IdR
+                                .Item("IDR") = NrRiga
                                 .Item("CodForn") = RowDTALL.Item("CodFor")
                                 .Item("CodCompo") = CodCompoForn
                                 .Item("DesCompo") = RowDTALL.Item("descomp")
@@ -2538,7 +2637,7 @@ Public Class frmPrincipale
                                     .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
                                     .Item("DescLavorazione") = RowDTALL.Item("deslav" & nrocl)
                                     .Item("Qta") = 1
-                                    .Item("Costo") = RowDTALL.Item("costolav" & nrocl)
+                                    .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
 
                                     .Item("CodComp") = CodCompo
                                     .Item("DescrCompo") = RowDTALL.Item("descomp")

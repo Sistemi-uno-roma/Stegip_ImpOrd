@@ -83,8 +83,10 @@
     End Structure
     Public DatiGen As TP_DatiGenerali
     Public Sub Main()
+
+
         'MsgBox(Command)
-       
+
         'Dim e As EnvironmentVariableTarget
         'e = EnvironmentVariableTarget.User
         'Dim strvar As String = ""
@@ -124,16 +126,16 @@
 
         LeggiConfig()
 
-        Dim b() As String = Environment.GetCommandLineArgs 
+        Dim b() As String = Environment.GetCommandLineArgs
         'Dim StazioneAppo As String = b(5)  
         Dim stazione As String = ""
         For i As Integer = 0 To b.Count - 1
             Dim marg As String = b(i)
             If UCase(marg) Like "-WS=*" Then
-                stazione = Split(marg, "=")(1) 
+                stazione = Split(marg, "=")(1)
             End If
             If UCase(marg) Like "-O=*" Then
-                DatiGen.OperatoreEs = Split(marg, "=")(1) 
+                DatiGen.OperatoreEs = Split(marg, "=")(1)
             End If
         Next
         Dim Gruppo As String = ""
@@ -156,7 +158,7 @@
 
             End If
         Else
-            MsgBox("Impossibile reperire la stazione da esolver verranno utilizzati i dati di default :" & vbCrLf & _
+            MsgBox("Impossibile reperire la stazione da esolver verranno utilizzati i dati di default :" & vbCrLf &
               "DbGruppo: " & DatiGen.DbGruppo & vbCrLf & "Stazione: " & DatiGen.WSP, MsgBoxStyle.Information)
             ' stazione = DatiGen.WSP
         End If
