@@ -1,0 +1,7 @@
+TES#@#2#@#1702#@##@##@#0#@#0#@##@#0#@#1702_1#@#DM
+RIG#@#2#@#1702#@##@##@#0#@#0#@#Lavorazione Prodotto : NEUABBTML0028 T-SHIRT MANICA LUNGA 220G#@#20#@#1702_2#@#DM
+RIG#@#2#@#1702#@#LAV#@#LAVORO 3#@#15#@#1#@##@#4#@#1702_3#@#DM
+TES#@#1#@#1811#@##@##@#0#@#0#@##@#0#@#1811_1#@#DM
+RIG#@#1#@#1811#@##@##@#0#@#0#@#Lavorazione Prodotto : NEUABBTML0028 T-SHIRT MANICA LUNGA 220G#@#20#@#1811_2#@#DM
+RIG#@#1#@#1811#@#LAV#@#stampa serigrafica#@#15#@#1#@##@#4#@#1811_3#@#DM
+RIG#@#1#@#1811#@#LAV#@#DESCRIZIONE#@#15#@#1#@##@#4#@#1811_3#@#DM

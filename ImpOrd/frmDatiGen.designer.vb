@@ -28,6 +28,12 @@ Partial Class frmDatiGen
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPageGen = New System.Windows.Forms.TabPage()
+        Me.Label13 = New System.Windows.Forms.Label()
+        Me.txtCodCda = New System.Windows.Forms.TextBox()
+        Me.updLungProgArt = New System.Windows.Forms.NumericUpDown()
+        Me.updLungProgComp = New System.Windows.Forms.NumericUpDown()
+        Me.Label11 = New System.Windows.Forms.Label()
+        Me.Label12 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.txtCodCicloLavTemplate = New System.Windows.Forms.TextBox()
         Me.cmdSfogliafileOr = New System.Windows.Forms.Button()
@@ -67,6 +73,8 @@ Partial Class frmDatiGen
         Me.txtFileBat = New System.Windows.Forms.TextBox()
         Me.TabControl1.SuspendLayout()
         Me.TabPageGen.SuspendLayout()
+        CType(Me.updLungProgArt, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.updLungProgComp, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox5.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.TabPageCosti.SuspendLayout()
@@ -112,6 +120,12 @@ Partial Class frmDatiGen
         '
         'TabPageGen
         '
+        Me.TabPageGen.Controls.Add(Me.Label13)
+        Me.TabPageGen.Controls.Add(Me.txtCodCda)
+        Me.TabPageGen.Controls.Add(Me.updLungProgArt)
+        Me.TabPageGen.Controls.Add(Me.updLungProgComp)
+        Me.TabPageGen.Controls.Add(Me.Label11)
+        Me.TabPageGen.Controls.Add(Me.Label12)
         Me.TabPageGen.Controls.Add(Me.Label5)
         Me.TabPageGen.Controls.Add(Me.txtCodCicloLavTemplate)
         Me.TabPageGen.Controls.Add(Me.cmdSfogliafileOr)
@@ -137,6 +151,56 @@ Partial Class frmDatiGen
         Me.TabPageGen.TabIndex = 2
         Me.TabPageGen.Text = "Generali"
         Me.TabPageGen.UseVisualStyleBackColor = True
+        '
+        'Label13
+        '
+        Me.Label13.AutoSize = True
+        Me.Label13.Location = New System.Drawing.Point(5, 271)
+        Me.Label13.Name = "Label13"
+        Me.Label13.Size = New System.Drawing.Size(48, 13)
+        Me.Label13.TabIndex = 77
+        Me.Label13.Text = "Cod.Cda"
+        '
+        'txtCodCda
+        '
+        Me.txtCodCda.Location = New System.Drawing.Point(109, 268)
+        Me.txtCodCda.Name = "txtCodCda"
+        Me.txtCodCda.Size = New System.Drawing.Size(121, 20)
+        Me.txtCodCda.TabIndex = 76
+        '
+        'updLungProgArt
+        '
+        Me.updLungProgArt.Location = New System.Drawing.Point(129, 297)
+        Me.updLungProgArt.Name = "updLungProgArt"
+        Me.updLungProgArt.Size = New System.Drawing.Size(87, 20)
+        Me.updLungProgArt.TabIndex = 75
+        '
+        'updLungProgComp
+        '
+        Me.updLungProgComp.Location = New System.Drawing.Point(377, 297)
+        Me.updLungProgComp.Name = "updLungProgComp"
+        Me.updLungProgComp.Size = New System.Drawing.Size(87, 20)
+        Me.updLungProgComp.TabIndex = 74
+        Me.updLungProgComp.Visible = False
+        '
+        'Label11
+        '
+        Me.Label11.AutoSize = True
+        Me.Label11.Location = New System.Drawing.Point(257, 299)
+        Me.Label11.Name = "Label11"
+        Me.Label11.Size = New System.Drawing.Size(114, 13)
+        Me.Label11.TabIndex = 73
+        Me.Label11.Text = "Lunghezza Prog.Comp"
+        Me.Label11.Visible = False
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Location = New System.Drawing.Point(6, 300)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(117, 13)
+        Me.Label12.TabIndex = 72
+        Me.Label12.Text = "Lunghezza Progressivo"
         '
         'Label5
         '
@@ -415,7 +479,6 @@ Partial Class frmDatiGen
         Me.dgvDatiEsport.Name = "dgvDatiEsport"
         Me.dgvDatiEsport.Size = New System.Drawing.Size(600, 248)
         Me.dgvDatiEsport.TabIndex = 8
-        Me.dgvDatiEsport.Visible = False
         '
         'cmdSfogliaPathExp
         '
@@ -482,6 +545,8 @@ Partial Class frmDatiGen
         Me.TabControl1.ResumeLayout(False)
         Me.TabPageGen.ResumeLayout(False)
         Me.TabPageGen.PerformLayout()
+        CType(Me.updLungProgArt, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.updLungProgComp, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox5.ResumeLayout(False)
         Me.GroupBox5.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
@@ -535,5 +600,10 @@ Partial Class frmDatiGen
     Friend WithEvents dgvDatiEsport As System.Windows.Forms.DataGridView
     Friend WithEvents Label5 As System.Windows.Forms.Label
     Friend WithEvents txtCodCicloLavTemplate As System.Windows.Forms.TextBox
-
+    Friend WithEvents updLungProgArt As NumericUpDown
+    Friend WithEvents updLungProgComp As NumericUpDown
+    Friend WithEvents Label11 As Label
+    Friend WithEvents Label12 As Label
+    Friend WithEvents Label13 As System.Windows.Forms.Label
+    Friend WithEvents txtCodCda As System.Windows.Forms.TextBox
 End Class

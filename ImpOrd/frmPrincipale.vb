@@ -238,42 +238,50 @@ Public Class frmPrincipale
 
             If txtFileOr.Text <> "" And _
                 DatiGen.PathExport <> "" And _
-                DatiGen.DbGruppo <> "" Then 
+                DatiGen.DbGruppo <> "" Then
                 If DatiGen.DbAccess <> "" Then
-                    'If DatiGen.Server <> "" And DatiGen.NomeDbSql <> "" And DatiGen.Utente <> "" Then
-                    If ConnettiAcc() Then
-                        ' DatiGen.DbGruppo = txtGruppo.Text
-                        Dim ModelloManca As String = ""
-                        ' If ModelliOk(ModelloManca) Then
-                        AttivaFrm(False)
-                        lblEspo.Visible = True
-                        AggiornaLbl("Esportazione")
-                        idImportazione = 0
-                        ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0)
-                        Dim Importa As Boolean = True
-                        Dim Tipo As String = ""
-                        ' For Each mitem As ListViewItem In lvwFile.Items
-                        AggiornaLbl("Esportazione file " & txtFileOr.Text)
+                    If DatiGen.Server <> "" And DatiGen.NomeDbSql <> "" And DatiGen.Utente <> "" Then
+                        If ConnettiEs() Then
+                            If ConnettiAcc() Then
+                                ' DatiGen.DbGruppo = txtGruppo.Text
+                                Dim ModelloManca As String = ""
+                                ' If ModelliOk(ModelloManca) Then
+                                AttivaFrm(False)
+                                lblEspo.Visible = True
+                                AggiornaLbl("Esportazione")
+                                idImportazione = 0
+                                ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0)
+                                Dim Importa As Boolean = True
+                                Dim Tipo As String = ""
+                                ' For Each mitem As ListViewItem In lvwFile.Items
+                                AggiornaLbl("Esportazione file " & txtFileOr.Text)
 
-                        '  AggiornaDatiGenAcc()
+                                '  AggiornaDatiGenAcc()
 
-                        Importa = Importa And CaricaFile(txtFileOr.Text)
-                        ' Next
-                        'If Importa Then
-                        '    Esporta()
-                        'End If
-                        MsgBox("Elaborazioni Terminate", MsgBoxStyle.Information)
-                        ' DisconnettiAcc()
-                        AttivaFrm(True)
-                        ' End
-                        'Else
-                        ' MsgBox("Attenzione. Non è stato trovato il modello di importazione:" & vbCrLf & ModelloManca & vbCrLf & "Impossibile proseguire!", MsgBoxStyle.Critical)
-                        ' ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0, "Importazioni - Non è stato trovato il modello di importazione:" & ModelloManca)
-                        '  End If
+                                Importa = Importa And CaricaFile(txtFileOr.Text)
+                                ' Next
+                                If Importa Then
+                                    Esporta()
+                                End If
+                                MsgBox("Elaborazioni Terminate", MsgBoxStyle.Information)
+                                ' DisconnettiAcc()
+                                AttivaFrm(True)
+                                ' End
+                                'Else
+                                ' MsgBox("Attenzione. Non è stato trovato il modello di importazione:" & vbCrLf & ModelloManca & vbCrLf & "Impossibile proseguire!", MsgBoxStyle.Critical)
+                                ' ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0, "Importazioni - Non è stato trovato il modello di importazione:" & ModelloManca)
+                                '  End If
+                            End If
+                        End If
+                        DisconnettiAcc()
+                        DisconnettiEs()
+                    Else
+                        MsgBox("Inserire i dati per le connessione ad Esolver", MsgBoxStyle.Critical)
+                        ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0, "Importazioni - Dati di Connessione Esolver Mancanti")
                     End If
                 Else
-                    MsgBox("Inserire i dati per le connessioni", MsgBoxStyle.Critical)
-                    ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0, "Importazioni - Dati di Connessione Mancanti")
+                    MsgBox("Inserire i dati per le connessione ad Access", MsgBoxStyle.Critical)
+                    ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 0, "Importazioni - Dati di Connessione Access Mancanti")
                 End If
             Else
                 MsgBox("Inserire Tutti i dati Necessari", MsgBoxStyle.Critical)
@@ -478,15 +486,15 @@ Public Class frmPrincipale
 
     End Function
 
-    Private Function EsisteCodPart(ByVal CodPart As Long, ByVal Tipo As String) As Boolean
+    Private Function EsisteCodPart_OLD(ByVal CodPart As Long, ByVal Tipo As String) As Boolean
         Dim rs As New ADODB.Recordset
 
-        EsisteCodPart = False
+        EsisteCodPart_OLD = False
         If ConnettiEs() Then
-            rs.Open("Select * from clientifornitori where codclifor=" & CodPart & " and Dbgruppo='" & DatiGen.DbGruppo & "' " & _
+            rs.Open("Select * from clientifornitori where codclifor=" & CodPart & " and Dbgruppo='" & DatiGen.DbGruppo & "' " &
                     " and TipoAnagrafica=" & IIf(UCase(Tipo) = "C", 1, 2), m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
             If Not rs.EOF Then
-                EsisteCodPart = True
+                EsisteCodPart_OLD = True
             End If
             rs.Close()
         End If
@@ -538,8 +546,9 @@ Public Class frmPrincipale
                 Dim rsOr As New ADODB.Recordset
 
                 Dim nomeField As String = "TipoLavoro_" & TP_LAVORO
+                'and " & nomeField & " =true 
 
-                rsOr.Open("Select * from DaEseguire where dbgruppo='" & DatiGen.DbGruppo & "' and attiva=true and " & nomeField & " =true order by priorita", m_ConnAcc, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
+                rsOr.Open("Select * from DaEseguire where dbgruppo='" & DatiGen.DbGruppo & "' and attiva=true order by priorita", m_ConnAcc, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
 
                 If Not rsOr.EOF Then
                     Do While Not rsOr.EOF
@@ -555,7 +564,7 @@ Public Class frmPrincipale
                         CreaLegami = (NoNull(rsOr("CreaLegami")))
                         GruppoDocOr = NoNull(rsOr("GruppoDocOR"))
                         GruppoDocDer = NoNull(rsOr("GruppoDocDer"))
-                        GestVarianti = NoNull(rsOr("GestVarianti"))
+                        'GestVarianti = NoNull(rsOr("GestVarianti"))
 
                         GestRifDocDaEvadere = NoNull(rsOr("GestRifDocDaEvadere")) '= 1
 
@@ -563,7 +572,7 @@ Public Class frmPrincipale
 
                         AllegaFile = NoNull(rsOr("AllegaFile"))
 
-                        GestCicliLav = NoNull(rsOr("GestCicliLav"))
+                        'GestCicliLav = NoNull(rsOr("GestCicliLav"))
 
                         nomefile = ""
                         nomefile = rsOr("NomeFileExpo").Value
@@ -619,8 +628,8 @@ Public Class frmPrincipale
                             'Shell(DatiGen.FileBat & " " & TipoImp & _
                             '   " " & NrModello & " " & DatiGen.DbGruppo & " " & DatiGen.WS & " " & DatiGen.WSP & " " & DatiGen.Operatore, AppWinStyle.NormalFocus, True)
 
-                            If ConnettiEs() Then
-                                Dim NomeTab As String = ""
+                            'If ConnettiEs() Then
+                            Dim NomeTab As String = ""
                                 If TipoImp = 0 Then
                                     NomeTab = "ImportazioniDoc"
                                 Else
@@ -683,12 +692,12 @@ Public Class frmPrincipale
                                     ReportImport = ReportImport & " " & Tabella & ":" & vbCrLf & "Importazione non effettuata" & vbCrLf & vbCrLf
                                 End If
                                 'ScriviLogImpo(DatiGen.DbGruppo, idImportazione, 2)
-                            Else
-                                MsgBox("Errore connessione Esolver")
-                                LogWrite("Errore connessione Esolver")
+                                'Else
+                                '    MsgBox("Errore connessione Esolver")
+                                '    LogWrite("Errore connessione Esolver")
+                                'End If
+                                'DisconnettiEs()
                             End If
-                            DisconnettiEs()
-                        End If
                         rsOr.MoveNext()
                     Loop
                 End If
@@ -976,7 +985,7 @@ Public Class frmPrincipale
         End Try
     End Sub
 
-    Private Sub SalvaVariantiEs(ByVal dbGruppo As String)
+    Private Sub SalvaVariantiEs_OLD(ByVal dbGruppo As String)
         Try
             If m_ConnAcc.State = 0 Then
                 ConnettiAcc()
@@ -1794,26 +1803,26 @@ Public Class frmPrincipale
         '    wrtr.Close()
         'End Try
     End Function
-    Private Function GetDescArt(ByVal DbGruppo As String, ByVal CodArt As String) As String
-        GetDescArt = ""
+    Private Function GetDescArt_OLD(ByVal DbGruppo As String, ByVal CodArt As String) As String
+        GetDescArt_OLD = ""
         If ConnettiEs() Then
             Dim rs As New ADODB.Recordset
             rs.Open("Select DesArt from ArtAnagrafica where Dbgruppo='" & DbGruppo & "' and codart='" & CodArt & "'", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
             If Not rs.EOF Then
-                GetDescArt = rs("DesArt").Value
+                GetDescArt_OLD = rs("DesArt").Value
             End If
             rs.Close()
             rs = Nothing
         End If
         DisconnettiEs()
     End Function
-    Private Function GetArtCollegato(ByVal DbGruppo As String, ByVal CodArt As String) As String
-        GetArtCollegato = ""
+    Private Function GetArtCollegato_OLD(ByVal DbGruppo As String, ByVal CodArt As String) As String
+        GetArtCollegato_OLD = ""
         If ConnettiEs() Then
             Dim rs As New ADODB.Recordset
             rs.Open("Select CodArtCollegato from artcollegati where Dbgruppo='" & DbGruppo & "' and codart='" & CodArt & "'", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
             If Not rs.EOF Then
-                GetArtCollegato = rs("CodArtCollegato").Value
+                GetArtCollegato_OLD = rs("CodArtCollegato").Value
             End If
             rs.Close()
             rs = Nothing
@@ -1821,32 +1830,33 @@ Public Class frmPrincipale
         DisconnettiEs()
     End Function
 
-    Private Function GetScortaArt(ByVal DbGruppo As String, ByVal CodArt As String) As Double
-        GetScortaArt = 0
+    Private Function GetScortaArt_OLD(ByVal DbGruppo As String, ByVal CodArt As String) As Double
+        GetScortaArt_OLD = 0
         If ConnettiEs() Then
             Dim rs As New ADODB.Recordset
             rs.Open("Select max(ScortaMinima) as Scorta from ArtScortaMinima where Dbgruppo='" & DbGruppo & "' and codart='" & CodArt & "' Group by Dbgruppo,Codart ", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
             If Not rs.EOF Then
-                GetScortaArt = Val(NoNull(rs("Scorta")))
+                GetScortaArt_OLD = Val(NoNull(rs("Scorta")))
             End If
             rs.Close()
             rs = Nothing
         End If
         DisconnettiEs()
     End Function
-    Private Function GetDispoArt(ByVal DbGruppo As String, ByVal CodArt As String) As Double
-        GetDispoArt = 0
+    Private Function GetDispoArt_OLD(ByVal DbGruppo As String, ByVal CodArt As String) As Double
+        GetDispoArt_OLD = 0
         If ConnettiEs() Then
             Dim rs As New ADODB.Recordset
             rs.Open("select GiacDisp, Disponibilita from ESV_SITART_AV   where dbgruppo='" & DbGruppo & "' and CodArt='" & CodArt & "' ", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
             If Not rs.EOF Then
-                GetDispoArt = Val(rs("GiacDisp").Value)
+                GetDispoArt_OLD = Val(rs("GiacDisp").Value)
             End If
             rs.Close()
             rs = Nothing
         End If
         DisconnettiEs()
     End Function
+     
     Private Function GetSalvaComm() As Boolean
         Try
             GetSalvaComm = False
@@ -1926,7 +1936,6 @@ Public Class frmPrincipale
     Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String,
                                  ByVal NrVar As String, ByVal CodTipoVar As String, ByVal NrRiga As Long) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
 
-        Dim indvar As Integer = 0
         Dim Appo() As String = Split(Trim(VarianteIn), ";")
         For x As Integer = 0 To Appo.Length - 1
             Dim varqta() As String
@@ -1940,20 +1949,20 @@ Public Class frmPrincipale
             Next
 
             If varqta.Length > 0 Then
+                If Trim(varqta(1)) <> "" Then
+                    Dim RowDTArtConfVar As DataRow = dtDatiArtConfVar.NewRow
+                    With RowDTArtConfVar
+                        .Item("DbGruppo") = DatiGen.DbGruppo
+                        .Item("NrRiga") = NrRiga
+                        .Item("Codart") = CodArt
+                        .Item("Variante") = varqta(1)
+                        .Item("Posizione") = NrVar + 1
+                        .Item("CodTipoVariante") = CodTipoVar ' gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                        .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                    End With
+                    dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
 
-                Dim RowDTArtConfVar As DataRow = dtDatiArtConfVar.NewRow
-                With RowDTArtConfVar
-                    .Item("DbGruppo") = DatiGen.DbGruppo
-                    .Item("NrRiga") = NrRiga
-                    .Item("Codart") = CodArt
-                    .Item("Variante") = varqta(1)
-                    .Item("Posizione") = NrVar + 1
-                    .Item("CodTipoVariante") = CodTipoVar ' gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
-                    .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
-                End With
-                dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
-
-                indvar += 1
+                End If
             End If
         Next
 
@@ -2017,8 +2026,8 @@ Public Class frmPrincipale
     Private Function GetSchemaCodifica(ByVal NomeModello As String) As String
         Dim schemacod As String = ""
         Try
-            If ConnettiEs() Then
-                Dim rs As New ADODB.Recordset
+            'If ConnettiEs() Then
+            Dim rs As New ADODB.Recordset
                 rs.Open("Select * From ModelliArtAnagr where codmodelloart='" & NomeModello & "' and dbgruppo='" & DatiGen.DbGruppo & "' ", m_ConnEs)
                 If Not rs.EOF Then
                     schemacod = rs("SchemaDiCodifica").Value
@@ -2027,19 +2036,19 @@ Public Class frmPrincipale
                 rs = Nothing
 
                 Return schemacod
-            End If
+            'End If
         Catch ex As Exception
             MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
         End Try
-        DisconnettiEs()
+        'DisconnettiEs()
     End Function
 
     Private Function GetCodiceComponente(ByVal CodCompoFile As String, ByVal SchemaCodCompo As String, ByVal ModelloCompo As String,
                                          ByVal CodArt As String, ByVal CodForn As String) As String 'ByVal NomeModello As String, ByVal schemacod As String, ByVal PosizioneVar As Integer) As String
         Dim CodCompo As String = ""
         Try
-            If ConnettiEs() Then
-                Dim rs As New ADODB.Recordset
+            'If ConnettiEs() Then
+            Dim rs As New ADODB.Recordset
 
                 If CodCompoFile <> "" Then
                     rs = New ADODB.Recordset
@@ -2069,13 +2078,13 @@ Public Class frmPrincipale
                 If CodCompo = "" Then
                     CodCompo = GetCodice_FUll(SchemaCodCompo, ModelloCompo, CodArt, "NEU")
                 End If
-            End If
+            'End If
             GetCodiceComponente = CodCompo
         Catch ex As Exception
             MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
         End Try
 
-        DisconnettiEs()
+        'DisconnettiEs()
     End Function
     Private Function GetCodice_FUll(ByVal SchemaCodArt As String, ByVal ModelloCodart As String,
                                          ByVal CodArt As String, ByVal Prefisso As String) As String 'ByVal NomeModello As String, ByVal schemacod As String, ByVal PosizioneVar As Integer) As String
@@ -2100,45 +2109,144 @@ Public Class frmPrincipale
     Private Function GetNumeratoreCodice(ByVal SchemaCodifica As String) As String
 
         Dim Progressivo As String = "00001"
-        Dim Prog As Long = 1
+        Dim Prog As Long = -1
         Dim NrChar As Integer = 0
-        Try
+        Dim Formato As String = ""
+        NrChar = DatiGen.LungProgArt
+        Formato = Formato.PadLeft(NrChar, "0")
+        Progressivo = Format(1, Formato)
 
-            If ConnettiEs() Then
+        Try
+            Dim connString As String = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" & DatiGen.DbAccess & ";" ' "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\myFolder\myAccess2007file.accdb;Persist Security Info=False;"
+            Dim accConnection As New OleDb.OleDbConnection(connString)
+            Dim accCommand As New Data.OleDb.OleDbCommand
+            Dim accDataAd As New Data.OleDb.OleDbDataAdapter
+
+
+            accCommand.Connection = accConnection
+            'carico i dataset
+            Dim DsNum As New DataSet("DsNum")
+            accCommand.CommandText = "Select * from Numeratori"
+            accDataAd.SelectCommand = accCommand
+            Dim accCommandBuilder As New OleDb.OleDbCommandBuilder(accDataAd)
+            accDataAd.InsertCommand = accCommandBuilder.GetInsertCommand()
+            accDataAd.UpdateCommand = accCommandBuilder.GetUpdateCommand()
+            Dim dtDatiNum As New DataTable("Numeratori")
+            accDataAd.Fill(dtDatiNum)
+            DsNum.Tables.Add(dtDatiNum)
+
+            Dim mrow() As DataRow = dtDatiNum.Select("Dbgruppo='" & DatiGen.DbGruppo & "' and SchemaCodifica='" & SchemaCodifica & "' ")
+            If mrow.Length > 0 Then
+                'ho già inserito dati quindi prendo il numero progressivo da access
+                Prog = mrow(0).Item("Numeratore") + 1
+                NrChar = mrow(0).Item("Lunghezza")
+                mrow(0).Item("Numeratore") = Prog
+                Try
+                    accDataAd.Update(dtDatiNum)
+                Catch ex As Exception
+                    If ConnettiAcc() Then
+                        m_ConnAcc.Execute("Update Numeratori set Numeratore=" & Prog & " whereDbgruppo='" & DatiGen.DbGruppo & "' and SchemaCodifica='" & SchemaCodifica & "' ")
+                        DisconnettiAcc()
+                    End If
+                End Try
+
+            End If
+
+            If Prog = -1 Then
+                'non ho trovato niente quindi cerco su esolver  
+                'If ConnettiEs() Then
+                Prog = 1
                 Dim rs As New ADODB.Recordset
                 rs = New ADODB.Recordset
                 Dim strsql As String = ""
-                strsql = " Select UltimoNumUtilizzato  from numeratori where dbgruppo='" & DatiGen.DbGruppo &
-                    "' and tiponumeratore=4 and codnumeratore ='" & SchemaCodifica & "'  "
+                '       strsql = " Select UltimoNumUtilizzato  from numeratori where dbgruppo='" & DatiGen.DbGruppo &
+                '           "' and tiponumeratore=4 and codnumeratore ='" & SchemaCodifica & "'  "
 
 
-                strsql = "SELECT   isnull(Numeratori.UltimoNumUtilizzato,0) as UltimoNumUtilizzato,  SchemaCodifStrut.NumCaratteriSegmento 
-                                FROM   Numeratori right JOIN
-                                 SchemaCodifStrut ON Numeratori.DBGruppo = SchemaCodifStrut.DBGruppo AND 
-								 Numeratori.CodNumeratore = SchemaCodifStrut.SchemaDiCodifica
-								 and Numeratori.TipoNumeratore = 4
-                                WHERE        (SchemaCodifStrut.DBGruppo = '" & DatiGen.DbGruppo & "') AND  
+                '       strsql = "SELECT   isnull(Numeratori.UltimoNumUtilizzato,0) as UltimoNumUtilizzato,  SchemaCodifStrut.NumCaratteriSegmento 
+                '                       FROM   Numeratori right JOIN
+                '                        SchemaCodifStrut ON Numeratori.DBGruppo = SchemaCodifStrut.DBGruppo AND 
+                'Numeratori.CodNumeratore = SchemaCodifStrut.SchemaDiCodifica
+                'and Numeratori.TipoNumeratore = 4
+                '                       WHERE        (SchemaCodifStrut.DBGruppo = '" & DatiGen.DbGruppo & "') AND  
+                '                       (SchemaCodifStrut.ContenutoSegmento  = 4) 
+                '                       and SchemaCodifStrut.SchemaDiCodifica   ='" & SchemaCodifica & "'"
+
+                strsql = "select artanagrafica.dbgruppo,artanagrafica.SchemaDiCodifica , 
+                        count(*) as UltimoNumUtilizzato,max(substring(codart,len(codart)-" & (NrChar - 1) & "," & NrChar & ") ) as Maxnr,
+                        isnull(SchemaCodifStrut.NumCaratteriSegmento,4) as NumCaratteriSegmento 
+                        from artanagrafica 
+                           left JOIN
+                                 SchemaCodifStrut ON artanagrafica.DBGruppo = SchemaCodifStrut.DBGruppo AND 
+								 artanagrafica.SchemaDiCodifica = SchemaCodifStrut.SchemaDiCodifica AND  
                                 (SchemaCodifStrut.ContenutoSegmento  = 4) 
-                                and SchemaCodifStrut.SchemaDiCodifica   ='" & SchemaCodifica & "'"
+                                WHERE        (artanagrafica.DBGruppo = '" & DatiGen.DbGruppo & "') 
+                                and artanagrafica.SchemaDiCodifica   ='" & SchemaCodifica & "' 
+                                group by artanagrafica.dbgruppo,artanagrafica.SchemaDiCodifica , SchemaCodifStrut.NumCaratteriSegmento"
+
+                strsql = "select artanagrafica.dbgruppo,artanagrafica.SchemaDiCodifica , 
+                        count(*) as UltimoNumUtilizzato ,max(substring(codart,len(codart)-" & (NrChar - 1) & "," & NrChar & ") ) as Maxnr 
+                        from artanagrafica  
+                                WHERE        (artanagrafica.DBGruppo = '" & DatiGen.DbGruppo & "') 
+                                and artanagrafica.SchemaDiCodifica   ='" & SchemaCodifica & "' 
+                                group by artanagrafica.dbgruppo,artanagrafica.SchemaDiCodifica "
 
                 rs.Open(strsql, m_ConnEs)
                 If Not rs.EOF Then
-                    Prog = Val(rs("UltimoNumUtilizzato").Value) + 1
-                    NrChar = Val(rs("NumCaratteriSegmento").Value)
+                    Dim UltimoCount As Long = Val(rs("UltimoNumUtilizzato").Value)
+                    Dim MaxProg As Long = Val(rs("Maxnr").Value)
+                    If UltimoCount >= MaxProg Then
+                        Prog = UltimoCount
+                    Else
+                        Prog = MaxProg
+                    End If
+                    'Prog = Val(rs("UltimoNumUtilizzato").Value) + 1
+                    ' NrChar = Val(rs("NumCaratteriSegmento").Value)
                 End If
                 rs.Close()
-                Dim Formato As String = ""
-                Formato = Formato.PadLeft(NrChar, "0")
-                Progressivo = Format(Prog, Formato)
-                LogWrite("PROGRESSIVO SCHEMA :  " & SchemaCodifica & "  - " & Prog & " - " & NrChar & " FORMAT : " & Formato & "  === " & Progressivo)
+
+                'aggiorno numeratore access
+                Dim NewRow As DataRow = dtDatiNum.NewRow
+                NewRow("Dbgruppo") = DatiGen.DbGruppo
+                NewRow("SchemaCodifica") = SchemaCodifica
+                NewRow("Numeratore") = Prog
+                NewRow("Lunghezza") = NrChar
+                dtDatiNum.Rows.Add(NewRow)
+                Try
+                    accDataAd.Update(dtDatiNum)
+                Catch ex As Exception
+                    If ConnettiAcc() Then
+                        m_ConnAcc.Execute("Insert into Numeratori (Dbgruppo,SchemaCodifica, Numeratore,Lunghezza) values ('" & DatiGen.DbGruppo & "','" & SchemaCodifica & "' ," & Prog & "," & NrChar & ")")
+                        DisconnettiAcc()
+                    End If
+                End Try
+
+                'End If
+                'DisconnettiEs()
             End If
+            Progressivo = Format(Prog, Formato)
+
+            'aggiorno esolver dopo importazione?!
+            'Dim rs As New ADODB.Recordset
+            'rs.Open("Select * from numeratori where dbgruppo='" & DatiGen.DbGruppo &
+            '        "' and tiponumeratore=4 and codnumeratore ='" & SchemaCodifica & "' and UltimoNumUtilizzato<" & Prog, m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
+            'If Not rs.EOF Then
+            '    rs.Update()
+            '    rs("UltimoNumUtilizzato").Value = Prog
+            '    rs.Update()
+            'End If
+            'rs.Close()
+
+
+
+            LogWrite("PROGRESSIVO SCHEMA :  " & SchemaCodifica & "  - " & Prog & " - " & NrChar & " FORMAT : " & Formato & "  === " & Progressivo)
+
 
             GetNumeratoreCodice = Progressivo
         Catch ex As Exception
             MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
         End Try
 
-        DisconnettiEs()
 
     End Function
 
@@ -2146,8 +2254,8 @@ Public Class frmPrincipale
         Dim CodTipoVar As String = ""
 
         Try
-            If ConnettiEs() Then
-                Dim rs As New ADODB.Recordset
+            'If ConnettiEs() Then
+            Dim rs As New ADODB.Recordset
                 If schemacod = "" Then schemacod = GetSchemaCodifica(NomeModello)
 
                 If schemacod <> "" Then
@@ -2159,13 +2267,13 @@ Public Class frmPrincipale
                     rs.Close()
                 End If
                 rs = Nothing
-            End If
+            'End If
             GtCodTipoVariante = CodTipoVar
         Catch ex As Exception
             MsgBox("Errore get tipo variante " & ex.Message & " in " & ex.StackTrace)
         End Try
 
-        DisconnettiEs()
+        ' DisconnettiEs()
     End Function
 
     Private Function LeggiExcel(ByVal NomeFile As String) As Boolean
@@ -2186,7 +2294,7 @@ Public Class frmPrincipale
 
                     'Excel 97-03
 
-                    mprovider = "Microsoft.Jet.OLEDB.4.0" 
+                    mprovider = "Microsoft.Jet.OLEDB.4.0"
 
                     ExtendedProp = "Excel 8.0"
                     Exit Select
@@ -2194,7 +2302,7 @@ Public Class frmPrincipale
                 Case ".xlsx"
 
                     'Excel 07
-                    
+
                     mprovider = "Microsoft.ACE.OLEDB.12.0"
                     ExtendedProp = "Excel 12.0 Xml"
 
@@ -2262,24 +2370,21 @@ Public Class frmPrincipale
             'Dim SheetName As String = dtExcelSchema.Rows(0)("TABLE_NAME").ToString()
 
             connExcel.Close()
-             
-
-
-
 
 
             'svuoto le tabelle di access
-            If ConnettiAcc() Then
-                m_ConnAcc.Execute("delete * from DatiOrd")
-                m_ConnAcc.Execute("delete * from Anagrafica")
-                ' m_ConnAcc.Execute("delete * from ArtVarianti")
-                m_ConnAcc.Execute("delete * from ArtConfVar")
-                m_ConnAcc.Execute("delete * from DBase")
-                m_ConnAcc.Execute("delete * from ORV_TOT")
-                m_ConnAcc.Execute("delete * from ORA_TOT")
-                m_ConnAcc.Execute("delete * from OCL_TOT") 
-            End If
-            DisconnettiAcc()
+            'If ConnettiAcc() Then
+            m_ConnAcc.Execute("delete * from DatiOrd")
+            m_ConnAcc.Execute("delete * from Anagrafica")
+            ' m_ConnAcc.Execute("delete * from ArtVarianti")
+            m_ConnAcc.Execute("delete * from ArtConfVar")
+            m_ConnAcc.Execute("delete * from DBase")
+            m_ConnAcc.Execute("delete * from ORV_TOT")
+            m_ConnAcc.Execute("delete * from ORA_TOT")
+            m_ConnAcc.Execute("delete * from OCL_TOT")
+            m_ConnAcc.Execute("delete * from Numeratori")
+            'End If
+            'DisconnettiAcc()
             Dim dsDest As New DataSet
             Dim connString As String = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" & DatiGen.DbAccess & ";" ' "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\myFolder\myAccess2007file.accdb;Persist Security Info=False;"
             Dim accConnection As New OleDb.OleDbConnection(connString)
@@ -2288,7 +2393,9 @@ Public Class frmPrincipale
 
             accCommand.Connection = accConnection
 
-            'carico i dataset
+            'carico i dataset 
+
+
             accCommand.CommandText = "Select * from Anagrafica"
             accDataAd.SelectCommand = accCommand
             Dim dtDatiArt As New DataTable("Anagrafica")
@@ -2320,7 +2427,7 @@ Public Class frmPrincipale
             accDataAd.Fill(dtDatiORV)
             dsDest.Tables.Add(dtDatiORV)
 
-            
+
 
             accCommand.CommandText = "Select * from ORA_TOT"
             accDataAd.SelectCommand = accCommand
@@ -2347,13 +2454,16 @@ Public Class frmPrincipale
             Dim idORV As Long = 0
             Dim idRORV As Long = 0
 
-           
-              
+
+
             Dim IndTab As Integer = 0
 
             Dim nometb As String = ds.Tables(IndTab).TableName
 
             AggiornaLbl("Caricamento Dati ")
+
+
+
             Dim CodCliTes As String = ""
 
             Dim NrRiga As Integer = 0
@@ -2364,6 +2474,12 @@ Public Class frmPrincipale
             Dim descart As String = ""
             Dim ModelloArt As String = ""
             Dim SchemaCodArt As String = ""
+            Dim ModelloCompo As String = ""
+            Dim SchemaCodCompo As String = ""
+            Dim CodCompoForn As String = ""
+            Dim CodCompo As String = ""
+            Dim DescCompo As String = ""
+            Dim CodForn As String = ""
             For r As Integer = 1 To ds.Tables(IndTab).Rows.Count - 1
                 Try
                     Dim RowDTALL As DataRow = dtDatiALL.NewRow
@@ -2399,253 +2515,266 @@ Public Class frmPrincipale
                         End With
                         dtDatiALL.Rows.Add(RowDTALL)
 
-                        CodCliTes = CodCli
-                        AggiornaLbl("Caricamento articoli")
-                        If Trim(RowDTALL.Item("Codart")) <> "" Then
-                            CodArtOr = ""
-                            Codart = ""
-                            descart = ""
-                            ModelloArt = ""
-                            SchemaCodArt = ""
 
-                            CodArtOr = RowDTALL.Item("Codart")
-                            ModelloArt = RowDTALL.Item("modart")
-                            SchemaCodArt = GetSchemaCodifica(ModelloArt)
-                            descart = RowDTALL.Item("desart")
-                            Codart = GetCodice_FUll(SchemaCodArt, ModelloArt, CodArtOr, "")
+                        If Val(CodCli) <> 0 Then
+                            CodCliTes = CodCli
+                            AggiornaLbl("Caricamento articoli")
 
-                        End If
+                            If Trim(RowDTALL.Item("Codart")) <> "" Then
+                                CodArtOr = ""
+                                Codart = ""
+                                descart = ""
+                                ModelloArt = ""
+                                SchemaCodArt = ""
+                                ModelloCompo = ""
+                                SchemaCodCompo = ""
+                                CodCompoForn = ""
+                                CodCompo = ""
+                                DescCompo = ""
+                                CodForn = ""
 
-                        If CodArtOr <> "" Then
+                                CodArtOr = RowDTALL.Item("Codart")
+                                ModelloArt = RowDTALL.Item("modart")
+                                SchemaCodArt = GetSchemaCodifica(ModelloArt)
+                                descart = RowDTALL.Item("desart")
+                                Codart = GetCodice_FUll(SchemaCodArt, ModelloArt, CodArtOr, "")
 
-                            Dim ModelloCompo As String = ""
-                            ModelloCompo = RowDTALL.Item("modcomp")
-
-                            If ModelloCompo = "" Then
-                                ModelloCompo = "NE" & ModelloArt
-                            End If
-                            Dim SchemaCodCompo As String = ""
-                            SchemaCodCompo = GetSchemaCodifica(ModelloCompo)
-
-
-                            Dim CodCompoForn As String = ""
-                            CodCompoForn = RowDTALL.Item("codcomp")
-                            Dim CodCompo As String = ""
-                            CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, CodArtOr, RowDTALL.Item("codfor"))
-                            If CodCompoForn = "" Then CodCompoForn = CodCompo
-
-                            NrRiga += 1
-                            'articoli
-                            With RowDTAna
-
-                                .Item("DbGruppo") = DatiGen.DbGruppo
-                                .Item("Codart") = Codart
-                                .Item("NrRiga") = NrRiga
-                                .Item("Descrizione") = RowDTALL.Item("desart")
-                                .Item("GruppoCodifica") = SchemaCodArt
-                                .Item("TipoArt") = "PF"
-                                .Item("Um") = ""
-                                .Item("CodiceModello") = ModelloArt
-                                .Item("CodForn") = ""
-                                .Item("CodArtForn") = ""
-                                .Item("NomeDB") = Codart
-                            End With
-                            dtDatiArt.Rows.Add(RowDTAna)
-
-                            'componente
-                            AggiornaLbl("Caricamento Componenti")
-
-
-                            RowDTAna = dtDatiArt.NewRow
-                            With RowDTAna
-                                .Item("DbGruppo") = DatiGen.DbGruppo
-                                .Item("Codart") = CodCompo
-                                .Item("NrRiga") = NrRiga
-                                .Item("Descrizione") = RowDTALL.Item("descomp")
-                                .Item("GruppoCodifica") = SchemaCodCompo
-                                .Item("TipoArt") = "MP"
-                                .Item("Um") = ""
-                                .Item("CodiceModello") = ModelloCompo
-                                .Item("CodForn") = RowDTALL.Item("codfor")
-                                .Item("CodArtForn") = CodCompoForn
-                                .Item("NomeDB") = Codart
-                            End With
-                            dtDatiArt.Rows.Add(RowDTAna)
-
-                            'varianti 
-                            AggiornaLbl("Caricamento Varianti")
-
-                            Dim Var(2) As String
-                            Var(0) = RowDTALL.Item("Var1")
-                            Var(1) = RowDTALL.Item("Var2")
-                            Var(2) = RowDTALL.Item("Var3")
-
-
-
-                            Dim VarCompo(2) As String
-                            VarCompo(0) = RowDTALL.Item("Var1comp")
-                            VarCompo(1) = RowDTALL.Item("Var2comp")
-                            VarCompo(2) = RowDTALL.Item("Var3comp")
-
-
-                            If VarCompo(0) = "" Then VarCompo(0) = Var(0)
-                            If VarCompo(1) = "" Then VarCompo(1) = Var(1)
-                            If VarCompo(2) = "" Then VarCompo(2) = Var(2)
-
-                            'Var(3) = RowDTALL.Item("Var4")
-                            'Var(4) = RowDTALL.Item("Var5")
-
-                            'Dim Varianti() As String
-                            'Dim Qta() As String
-                            Dim indvar As Long = 0
-                            Try
-                                Dim NrRec As Integer = 0
-                                'Dim Variante As String = ""
-                                For nrvar As Integer = 0 To Var.Length - 1
-                                    Dim codtipovar As String = GtCodTipoVariante(ModelloArt, SchemaCodArt, nrvar + 1)
-                                    Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
-                                    If codtipovar_compo = "" Then codtipovar_compo = codtipovar
-                                    If Var(nrvar) <> "" Then
-                                        GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga) ', Varianti, Qta, Variante)
-                                    End If
-                                    If VarCompo(nrvar) <> "" Then
-                                        GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga) ', VariantiComp, QtaComp, VarianteCom)
-                                    End If
-                                Next
-
-                            Catch ex As Exception
-                                MsgBox("Errore " & ex.Message)
-                            End Try
-                            'If Not Varianti Is Nothing Then
-                            '    For i As Integer = 0 To Varianti.Length - 1
-                            '        RowDTArtVar = dtDatiArtvar.NewRow
-                            '        With RowDTArtVar
-                            '            .Item("DbGruppo") = DatiGen.DbGruppo
-                            '            .Item("Codart") = RowDTALL.Item("Codart")
-                            '            .Item("Variante") = Varianti(i)
-                            '        End With
-
-                            '        dtDatiArtvar.Rows.Add(RowDTArtVar)
-                            '    Next
-                            'End If
-
-                            'Dim VariantiComp() As String
-                            'Dim QtaComp() As String
-                            'Dim VarianteCom As String = ""
-
-                            'GetVarianti(dtDatiArtConfVar, RowDTALL.Item("CodCompo"), RowDTALL.Item("VarCompo1"), 0) ', VariantiComp, QtaComp, VarianteCom)
-
-                            'If Not VariantiComp Is Nothing Then
-                            '    For i As Integer = 0 To VariantiComp.Length - 1
-                            '        RowDTArtVar = dtDatiArtvar.NewRow
-                            '        With RowDTArtVar
-                            '            .Item("DbGruppo") = DatiGen.DbGruppo
-                            '            .Item("Codart") = RowDTALL.Item("CodCompo")
-                            '            .Item("Variante") = VariantiComp(i)
-                            '        End With
-                            '        dtDatiArtvar.Rows.Add(RowDTArtVar)
-                            '    Next
-                            'End If
-
-
-
-                            'Distinta
-
-
-                            AggiornaLbl("Caricamento Distinta")
-                            RowDTDBase = dtDatiDB.NewRow
-                            With RowDTDBase
-
-                                .Item("DbGruppo") = DatiGen.DbGruppo
-                                .Item("CodDb") = Codart
-                                .Item("CodArtCompo") = CodCompo
-                                .Item("Qta") = 1
-                            End With
-                            dtDatiDB.Rows.Add(RowDTDBase)
-
-
-                            Dim IdT As Integer = 1
-
-                            'ORV
-
-
-                            AggiornaLbl("Caricamento ORV")
-                            ' For i As Integer = 0 To Varianti.Length - 1 
-                            RowDTORV = dtDatiORV.NewRow()
-                            With RowDTORV
-                                .Item("DbGruppo") = DatiGen.DbGruppo
-                                .Item("ID_T") = IdT
-                                .Item("IDR") = NrRiga
-                                .Item("CodCli") = RowDTALL.Item("CodCli")
-                                .Item("CapoGruppo") = RowDTALL.Item("clicapo")
-                                .Item("commessa") = RowDTALL.Item("comm")
-                                .Item("CanaleVendita") = RowDTALL.Item("canven")
-                                .Item("Codart") = Codart
-                                .Item("Descrizione") = RowDTALL.Item("desart")
-                                .Item("Variante") = "" 'Varianti(i) 
-                                .Item("Qta") = RowDTALL.Item("qtatot") ' Qta(i)
-                                .Item("PrezzoUnit") = RowDTALL.Item("prezzo")
-                                .Item("DataConsegnaRich") = Format(Now.Date, "dd/MM/yyyy") ' IIf(RowDTALL.Item("DataConsegna") = "", Format(Now.Date, "dd/MM/yyyy"), RowDTALL.Item("DataConsegna"))
-                            End With
-                            dtDatiORV.Rows.Add(RowDTORV)
-                            'Next
-
-                            'ORA
-                            IdT = 1
-
-
-                            AggiornaLbl("Caricamento ORA")
-                            RowDTORA = dtDatiORA.NewRow()
-                            With RowDTORA
-                                .Item("DbGruppo") = DatiGen.DbGruppo
-                                .Item("ID_T") = IdT
-                                .Item("IDR") = NrRiga
-                                .Item("CodForn") = RowDTALL.Item("CodFor")
-                                .Item("CodCompo") = CodCompoForn
-                                .Item("DesCompo") = RowDTALL.Item("descomp")
-                                .Item("VarCompo") = ""
-                                .Item("Qta") = 1
-                                .Item("Costo") = RowDTALL.Item("costo")
-                            End With
-                            dtDatiORA.Rows.Add(RowDTORA)
-                            'End If
-
-                            'OCL
-                            AggiornaLbl("Caricamento OCL")
-                            IdT = 0
-                            For nrocl As Integer = 1 To 8
-
-                                Dim IdTes As Integer = 0
-                                Dim CodTerz As String = RowDTALL.Item("terz" & nrocl)
-                                Dim mrow() As DataRow = dtDatiOCL.Select("CodTerz='" & CodTerz & "'")
-                                If mrow.Length > 0 Then
-                                    IdTes = mrow(0).Item("ID_T")
-                                Else
-                                    mrow = dtDatiOCL.Select("", "ID_T desc")
-                                    If mrow.Length > 0 Then
-                                        IdTes = mrow(0).Item("ID_T") + 1
-                                    Else
-                                        IdTes = 1
-                                    End If
+                                'Componenti
+                                ModelloCompo = RowDTALL.Item("modcomp")
+                                If ModelloCompo = "" Then
+                                    ModelloCompo = "NE" & ModelloArt
                                 End If
+                                SchemaCodCompo = GetSchemaCodifica(ModelloCompo)
+                                DescCompo = RowDTALL.Item("descomp")
+                                CodCompoForn = RowDTALL.Item("codcomp")
 
-                                RowDTOCL = dtDatiOCL.NewRow()
-                                With RowDTOCL
+                                CodForn = RowDTALL.Item("codfor")
+                                CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, CodArtOr, CodForn)
+                                If CodCompoForn = "" Then CodCompoForn = CodCompo
+                            End If
+
+                            If CodArtOr <> "" Then
+
+                                NrRiga += 1
+                                'articoli
+                                With RowDTAna
+
                                     .Item("DbGruppo") = DatiGen.DbGruppo
-                                    .Item("ID_T") = IdTes
-                                    .Item("CodTerz") = CodTerz
-                                    .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
-                                    .Item("DescLavorazione") = RowDTALL.Item("deslav" & nrocl)
-                                    .Item("Qta") = 1
-                                    .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
-
-                                    .Item("CodComp") = CodCompo
-                                    .Item("DescrCompo") = RowDTALL.Item("descomp")
-                                    .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
+                                    .Item("Codart") = Codart
+                                    .Item("NrRiga") = NrRiga
+                                    .Item("Descrizione") = descart
+                                    .Item("GruppoCodifica") = SchemaCodArt
+                                    .Item("TipoArt") = "PF"
+                                    .Item("Um") = ""
+                                    .Item("CodiceModello") = ModelloArt
+                                    .Item("CodForn") = ""
+                                    .Item("CodArtForn") = ""
+                                    .Item("NomeDB") = Codart
                                 End With
-                                dtDatiOCL.Rows.Add(RowDTOCL)
-                            Next
+                                dtDatiArt.Rows.Add(RowDTAna)
 
+                                'componente
+                                AggiornaLbl("Caricamento Componenti")
+
+
+                                RowDTAna = dtDatiArt.NewRow
+                                With RowDTAna
+                                    .Item("DbGruppo") = DatiGen.DbGruppo
+                                    .Item("Codart") = CodCompo
+                                    .Item("NrRiga") = NrRiga
+                                    .Item("Descrizione") = DescCompo
+                                    .Item("GruppoCodifica") = SchemaCodCompo
+                                    .Item("TipoArt") = "MP"
+                                    .Item("Um") = ""
+                                    .Item("CodiceModello") = ModelloCompo
+                                    .Item("CodForn") = CodForn
+                                    .Item("CodArtForn") = CodCompoForn
+                                    .Item("NomeDB") = Codart
+                                End With
+                                dtDatiArt.Rows.Add(RowDTAna)
+
+                                'varianti 
+                                AggiornaLbl("Caricamento Varianti")
+
+                                Dim Var(2) As String
+                                Var(0) = RowDTALL.Item("Var1")
+                                Var(1) = RowDTALL.Item("Var2")
+                                Var(2) = RowDTALL.Item("Var3")
+
+
+
+                                Dim VarCompo(2) As String
+                                VarCompo(0) = RowDTALL.Item("Var1comp")
+                                VarCompo(1) = RowDTALL.Item("Var2comp")
+                                VarCompo(2) = RowDTALL.Item("Var3comp")
+
+
+                                If VarCompo(0) = "" Then VarCompo(0) = Var(0)
+                                If VarCompo(1) = "" Then VarCompo(1) = Var(1)
+                                If VarCompo(2) = "" Then VarCompo(2) = Var(2)
+
+                                'Var(3) = RowDTALL.Item("Var4")
+                                'Var(4) = RowDTALL.Item("Var5")
+
+                                'Dim Varianti() As String
+                                'Dim Qta() As String
+                                Dim indvar As Long = 0
+                                Try
+                                    Dim NrRec As Integer = 0
+                                    'Dim Variante As String = ""
+                                    For nrvar As Integer = 0 To Var.Length - 1
+                                        Dim codtipovar As String = GtCodTipoVariante(ModelloArt, SchemaCodArt, nrvar + 1)
+                                        Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
+                                        If codtipovar_compo = "" Then codtipovar_compo = codtipovar
+                                        If Var(nrvar) <> "" Then
+                                            GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga) ', Varianti, Qta, Variante)
+                                        End If
+                                        If VarCompo(nrvar) <> "" Then
+                                            GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga) ', VariantiComp, QtaComp, VarianteCom)
+                                        End If
+                                    Next
+
+                                Catch ex As Exception
+                                    MsgBox("Errore " & ex.Message)
+                                End Try
+                                'If Not Varianti Is Nothing Then
+                                '    For i As Integer = 0 To Varianti.Length - 1
+                                '        RowDTArtVar = dtDatiArtvar.NewRow
+                                '        With RowDTArtVar
+                                '            .Item("DbGruppo") = DatiGen.DbGruppo
+                                '            .Item("Codart") = RowDTALL.Item("Codart")
+                                '            .Item("Variante") = Varianti(i)
+                                '        End With
+
+                                '        dtDatiArtvar.Rows.Add(RowDTArtVar)
+                                '    Next
+                                'End If
+
+                                'Dim VariantiComp() As String
+                                'Dim QtaComp() As String
+                                'Dim VarianteCom As String = ""
+
+                                'GetVarianti(dtDatiArtConfVar, RowDTALL.Item("CodCompo"), RowDTALL.Item("VarCompo1"), 0) ', VariantiComp, QtaComp, VarianteCom)
+
+                                'If Not VariantiComp Is Nothing Then
+                                '    For i As Integer = 0 To VariantiComp.Length - 1
+                                '        RowDTArtVar = dtDatiArtvar.NewRow
+                                '        With RowDTArtVar
+                                '            .Item("DbGruppo") = DatiGen.DbGruppo
+                                '            .Item("Codart") = RowDTALL.Item("CodCompo")
+                                '            .Item("Variante") = VariantiComp(i)
+                                '        End With
+                                '        dtDatiArtvar.Rows.Add(RowDTArtVar)
+                                '    Next
+                                'End If
+
+
+
+                                'Distinta
+
+
+                                AggiornaLbl("Caricamento Distinta")
+                                RowDTDBase = dtDatiDB.NewRow
+                                With RowDTDBase
+
+                                    .Item("DbGruppo") = DatiGen.DbGruppo
+                                    .Item("CodDb") = Codart
+                                    .Item("CodArtCompo") = CodCompo
+                                    .Item("Qta") = 1
+                                End With
+                                dtDatiDB.Rows.Add(RowDTDBase)
+
+
+                                Dim IdT As Integer = 1
+
+                                'ORV
+
+                                Dim codcomm As String = ""
+                                codcomm = RowDTALL.Item("comm")
+
+                                AggiornaLbl("Caricamento ORV")
+                                ' For i As Integer = 0 To Varianti.Length - 1 
+                                RowDTORV = dtDatiORV.NewRow()
+                                With RowDTORV
+                                    .Item("DbGruppo") = DatiGen.DbGruppo
+                                    .Item("ID_T") = IdT
+                                    .Item("IDR") = NrRiga
+                                    .Item("CodCli") = CodCliTes ' RowDTALL.Item("CodCli")
+                                    .Item("CapoGruppo") = RowDTALL.Item("clicapo")
+                                    .Item("commessa") = codcomm
+                                    .Item("CanaleVendita") = RowDTALL.Item("canven")
+                                    .Item("Codart") = Codart
+                                    .Item("Descrizione") = descart
+                                    .Item("Variante") = "" 'Varianti(i) 
+                                    .Item("Qta") = RowDTALL.Item("qtatot") ' Qta(i)
+                                    .Item("PrezzoUnit") = RowDTALL.Item("prezzo")
+                                    .Item("DataConsegnaRich") = Format(Now.Date, "dd/MM/yyyy") ' IIf(RowDTALL.Item("DataConsegna") = "", Format(Now.Date, "dd/MM/yyyy"), RowDTALL.Item("DataConsegna"))
+                                End With
+                                dtDatiORV.Rows.Add(RowDTORV)
+
+                                If codcomm <> "" Then
+                                    SalvaCommessa(DatiGen.DbGruppo, DatiGen.CodCDA, codcomm, CodCliTes)
+                                End If
+                                'Next
+
+                                'ORA
+                                IdT = 1
+
+
+                                AggiornaLbl("Caricamento ORA")
+                                RowDTORA = dtDatiORA.NewRow()
+                                With RowDTORA
+                                    .Item("DbGruppo") = DatiGen.DbGruppo
+                                    .Item("ID_T") = IdT
+                                    .Item("IDR") = NrRiga
+                                    .Item("CodForn") = CodForn
+                                    .Item("CodCompo") = CodCompoForn
+                                    .Item("DesCompo") = DescCompo
+                                    .Item("VarCompo") = ""
+                                    .Item("Qta") = 1
+                                    .Item("Costo") = RowDTALL.Item("costo")
+                                    .Item("codcommessa") = RowDTALL.Item("comm")
+                                End With
+                                dtDatiORA.Rows.Add(RowDTORA)
+                                'End If
+
+                                'OCL
+                                AggiornaLbl("Caricamento OCL")
+                                IdT = 0
+                                For nrocl As Integer = 1 To 8
+
+                                    Dim IdTes As Integer = 0
+                                    Dim CodTerz As String = RowDTALL.Item("terz" & nrocl)
+                                    Dim mrow() As DataRow = dtDatiOCL.Select("CodTerz='" & CodTerz & "'")
+                                    If mrow.Length > 0 Then
+                                        IdTes = mrow(0).Item("ID_T")
+                                    Else
+                                        mrow = dtDatiOCL.Select("", "ID_T desc")
+                                        If mrow.Length > 0 Then
+                                            IdTes = mrow(0).Item("ID_T") + 1
+                                        Else
+                                            IdTes = 1
+                                        End If
+                                    End If
+
+                                    RowDTOCL = dtDatiOCL.NewRow()
+                                    With RowDTOCL
+                                        .Item("DbGruppo") = DatiGen.DbGruppo
+                                        .Item("ID_T") = IdTes
+                                        .Item("CodTerz") = CodTerz
+                                        .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
+                                        .Item("DescLavorazione") = RowDTALL.Item("deslav" & nrocl)
+                                        .Item("Qta") = 1
+                                        .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
+
+                                        .Item("CodComp") = CodCompo
+                                        .Item("DescrCompo") = DescCompo
+                                        .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
+                                        .Item("codcommessa") = RowDTALL.Item("comm")
+                                    End With
+                                    dtDatiOCL.Rows.Add(RowDTOCL)
+                                Next
+                            End If
                         Else
 
                             AggiornaLbl("Caricamento NOTE")
@@ -2683,7 +2812,6 @@ Public Class frmPrincipale
                             End If
 
                         End If
-
                     End If
                 Catch ex As Exception
                     MsgBox("errore Scrittura " & nometb & " riga " & r & " :" & ex.Message & vbCrLf & "in " & ex.StackTrace)
@@ -2719,25 +2847,67 @@ Public Class frmPrincipale
                     Catch ex As Exception
                         Dim mrow() As DataRow = dsDest.Tables(i).Select()
                         Dim rs As New ADODB.Recordset
-                        If ConnettiAcc() Then
+                        ' If ConnettiAcc() Then
 
-                            rs.Open("select * from " & NomeTab, m_ConnAcc, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
-                            For riga As Integer = 0 To mrow.Count - 1
+                        rs.Open("select * from " & NomeTab, m_ConnAcc, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
+                        For riga As Integer = 0 To mrow.Count - 1
 
-                                rs.AddNew()
-                                For x As Integer = 1 To dsDest.Tables(i).Columns.Count - 1
-                                    Dim nomecampo As String = dsDest.Tables(i).Columns(x).ColumnName
-                                    rs(nomecampo).Value = mrow(riga).Item(nomecampo)
-                                Next
-                                rs.Update()
+                            rs.AddNew()
+                            For x As Integer = 1 To dsDest.Tables(i).Columns.Count - 1
+                                Dim nomecampo As String = dsDest.Tables(i).Columns(x).ColumnName
+                                rs(nomecampo).Value = mrow(riga).Item(nomecampo)
                             Next
-                            rs.Close()
-                        End If
-                        DisconnettiAcc()
+                            rs.Update()
+                        Next
+                        rs.Close()
+                        ' End If
+                        ' DisconnettiAcc()
 
                     End Try
                 Next
 
+
+
+                'Controllo Qta totali
+
+                '  If ConnettiAcc() Then
+                Dim rs2 As New ADODB.Recordset
+                rs2.Open("SELECT ORV_TOT.IDR, ORV_TOT.Codart, ORV_TOT.Qta  FROM ORV_TOT WHERE (((ORV_TOT.IDR)<>0) AND ((ORV_TOT.Codart)<>'')) ", m_ConnAcc)
+                Dim QtaTotRiga As Double = 0
+                Dim QtaRiga As Double = 0
+                If Not rs2.EOF Then
+                    Do While Not rs2.EOF
+                        Dim IdRiga As Long = 0
+                        IdRiga = rs2("IDR").Value
+                        QtaTotRiga = rs2("Qta").Value
+
+                        Dim rs3 As New ADODB.Recordset
+                        rs3.Open("SELECT DISTINCT ORV_TOT.IDR, ORV_TOT.Codart, Sum((IIf(IsNull([Varianti.TotQta])=-1,[ORV_TOT].[qta],[TotQta]))) AS Qta
+                                            FROM ORV_TOT LEFT JOIN Varianti ON (ORV_TOT.IDR = Varianti.NrRiga) AND (ORV_TOT.Codart = Varianti.Codart) AND (ORV_TOT.DbGruppo = Varianti.DbGruppo) 
+                                            Where ORV_TOT.IDR=" & IdRiga & " 
+                                            GROUP BY ORV_TOT.IDR, ORV_TOT.CodCli, ORV_TOT.Codart
+                                            HAVING (((ORV_TOT.CodCli)<>'') AND ((ORV_TOT.Codart)<>''))   ", m_ConnAcc)
+
+                        If Not rs3.EOF Then
+                            QtaRiga = rs3("Qta").Value
+                        End If
+                        rs3.Close()
+                        If QtaRiga <> QtaTotRiga Then
+
+                            MsgBox("La quantità totale non corrisponde alla quantità della riga: NrRiga: " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga & vbCrLf &
+                                       "L'elaborazione non verrà completata", MsgBoxStyle.Critical)
+                            LogWrite("La quantità totale non corrisponde alla quantità della riga: NrRiga :  " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga)
+                            LeggiExcel = False
+                            Exit Do
+                        End If
+                        rs2.MoveNext()
+                    Loop
+
+                End If
+                rs2.Close()
+                rs2 = Nothing
+                '  End If
+                '   DisconnettiAcc()
                 ' ''salvo legami forn
                 ''LogWrite("SALVO LEGAMI FORN")
                 ''Try
@@ -2819,10 +2989,103 @@ Public Class frmPrincipale
         rs = Nothing
 
     End Function
-
-    Public Function SalvaCommessa(ByVal DbGruppo As String, ByVal CodCdA As String, ByVal CodCommessa As String, ByVal CodCliEsterno As String) As Boolean
+    Public Function SalvaCommessa(ByVal DbGruppo As String, ByVal CodCdA As String, ByVal CodCommessa As String, ByVal CodCli As Long) As Boolean
         Try
             SalvaCommessa = True
+
+
+            Dim rs As New ADODB.Recordset
+            'Dim CodCli As Long = 0
+            'If Trim(CodCliEsterno) <> "" Then
+            '    rs.Open("select CodCliForEsolver  from CliForLegami where dbgruppo='" & DbGruppo & "' and TipoAnagrafica =1 and CodCliForEsterno ='" & CodCliEsterno & "'", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
+            '    If Not rs.EOF Then
+            '        CodCli = NoNull(rs("CodCliForEsolver"))
+            '    End If
+            '    rs.Close()
+            '    rs = Nothing
+            'End If
+
+            rs = New ADODB.Recordset
+
+            rs.Open("Select * from CommesseSottocomAn where DbGruppo='" & DbGruppo & "' and  " &
+                    "CodCommessa ='" & CodCommessa & "'", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
+
+            If rs.EOF Then
+                rs.AddNew()
+                rs("DbGruppo").Value = DbGruppo
+                rs("CodCommessa").Value = CodCommessa
+                rs("CodSottocommessa").Value = ""
+                rs("Descrizione").Value = CodCommessa
+                rs("DataInizio").Value = "01/01/1800"
+                rs("DataFinePrevista").Value = "01/01/1800"
+                rs("GestFasi").Value = 0
+                rs("FasiAmmesse").Value = 0
+                rs("CodCliFor").Value = CodCli ' 0 'modifica richiesta da RC 24/06/22
+                rs("RicercaAlternativa").Value = ""
+                rs("UnitaMisura").Value = ""
+                rs("CodRaggrClasse1").Value = ""
+                rs("CodRaggrClasse2").Value = ""
+                rs("CodRaggrClasse3").Value = ""
+                rs("CodCentroImputazione").Value = 0
+                rs("CodDivisione").Value = 0
+                rs("CodCdAAssegnazione").Value = CodCdA
+                rs("SituazioneCentro").Value = 0
+                rs("GestSottocommesse").Value = 0
+                rs("RagSoc1").Value = ""
+                rs("RagSoc2").Value = ""
+                rs("Presso").Value = ""
+                rs("IndirDiSpedizione").Value = ""
+                rs("Indir2DiSpedizione").Value = ""
+                rs("Cap").Value = ""
+                rs("LocalitaDiSpediz").Value = ""
+                rs("Localita2DiSpediz").Value = ""
+                rs("ProvDiSpedizione").Value = ""
+                rs("CodStato").Value = ""
+                rs("NumTel").Value = ""
+                rs("NumTel2").Value = ""
+                rs("NumFax").Value = ""
+                rs("IndirEmail").Value = ""
+                rs("CodArea").Value = ""
+                rs("DataChiusura").Value = "01/01/1800"
+                rs("CodRespPrimoLiv").Value = ""
+                rs("CodRespSecondoLiv").Value = ""
+                rs("GestPianifAttivita").Value = 0
+                rs("WsInUso").Value = ""
+                rs("FirmaCreazData").Value = Format(Now.Date, "yyyy-MM-dd")
+                rs("FirmaCreazOra").Value = Format(TimeOfDay, "HHmmss")
+                rs("FirmaCreazStazione").Value = DatiGen.WSP
+                rs("FirmaCreazOperatore").Value = DatiGen.Operatore
+                rs("FirmaUltVarData").Value = Format(Now.Date, "yyyy-MM-dd")
+                rs("FirmaUltVarOra").Value = Format(TimeOfDay, "HHmmss")
+                rs("FirmaUltVarStazione").Value = DatiGen.WSP
+                rs("FirmaUltVarOperatore").Value = DatiGen.Operatore
+                rs("Annotazione").Value = "" 
+                rs("CodCondizPagamento").Value = ""
+                rs("FattPrestazioni").Value = 0
+                rs("DataApertura").Value = "01/01/1800"
+                rs("TipoSchedaTecnComm").Value = ""
+                rs("GestDocumentazione").Value = 0
+                rs("CodIndirizzoCli").Value = 0
+                rs("LegameCentro").Value = 1
+                rs("CodTracciabFinanz").Value = 0
+                rs("IdAnagGen").Value = 0
+                rs("CodCdAErogante").Value = ""
+                rs("DesEstesa").Value = ""  
+
+                rs.Update()
+
+            End If
+            rs.Close()
+            rs = Nothing
+        Catch ex As Exception
+            SalvaCommessa = False
+            'MsgBox("Salva commessa " & CodCommessa & " - " & CodSottoComm & " Errore :" & ex.Message & " in " & ex.StackTrace)
+            LogWrite("Salva commessa " & CodCommessa & " - " & CodCdA & " Errore :" & ex.Message & " in " & ex.StackTrace)
+        End Try
+    End Function
+    Public Function SalvaCommessa_OLD(ByVal DbGruppo As String, ByVal CodCdA As String, ByVal CodCommessa As String, ByVal CodCliEsterno As String) As Boolean
+        Try
+            SalvaCommessa_OLD = True
             If ConnettiEs() Then
 
 
@@ -2839,7 +3102,7 @@ Public Class frmPrincipale
 
                 rs = New ADODB.Recordset
 
-                rs.Open("Select * from CommesseSottocomAn where DbGruppo='" & DbGruppo & "' and  " & _
+                rs.Open("Select * from CommesseSottocomAn where DbGruppo='" & DbGruppo & "' and  " &
                         "CodCommessa ='" & CodCommessa & "'", m_ConnEs, ADODB.CursorTypeEnum.adOpenDynamic, ADODB.LockTypeEnum.adLockOptimistic)
 
                 If rs.EOF Then
@@ -2916,7 +3179,7 @@ Public Class frmPrincipale
             End If
             DisconnettiEs()
         Catch ex As Exception
-            SalvaCommessa = False
+            SalvaCommessa_OLD = False
             'MsgBox("Salva commessa " & CodCommessa & " - " & CodSottoComm & " Errore :" & ex.Message & " in " & ex.StackTrace)
             LogWrite("Salva commessa " & CodCommessa & " - " & CodCdA & " Errore :" & ex.Message & " in " & ex.StackTrace)
         End Try

@@ -31,6 +31,8 @@
         Dim CodSMT As String
         Dim CodTHT As String
 
+        Dim LungProgArt As Integer
+        Dim LungProgComp As Integer
         'Dim DocProv As Boolean
 
 
@@ -253,6 +255,12 @@
             ds.Tables("DatiGen").Columns.Add("PathFileOr")
             ds.Tables("DatiGen").Columns.Add("DocProv")
 
+            ds.Tables("DatiGen").Columns.Add("LungProgArt")
+            ds.Tables("DatiGen").Columns.Add("LungProgComp")
+
+
+            ds.Tables("DatiGen").Columns.Add("CodCDA")
+
 
             'ds.Tables("DatiGen").Columns.Add("GrCod_PF")
             'ds.Tables("DatiGen").Columns.Add("GrCod_Comp")
@@ -331,6 +339,9 @@
             NewRow.Item("PathConfES") = .PathConfES
             NewRow.Item("PathFileOr") = .PathFileOr
 
+            NewRow.Item("LungProgArt") = .LungProgArt
+            NewRow.Item("LungProgComp") = .LungProgComp
+            NewRow.Item("CodCDA") = .CodCDA
             'NewRow.Item("DocProv") = IIf(.DocProv, 1, 0) 
 
 
@@ -573,7 +584,36 @@
                     'frmDatiGen.txtDbBanca.BackColor = Color.Yellow
                 End If
 
-
+                If Not ds.Tables("DatiGen").Columns("LungProgArt") Is Nothing Then
+                    .LungProgArt = Val(ds.Tables("DatiGen").Rows(0).Item("LungProgArt"))
+                    If .LungProgArt = 0 Then
+                        ValoriNull = True
+                    End If
+                Else
+                    ds.Tables("DatiGen").Columns.Add("LungProgArt")
+                    StruttVariata = True
+                    'frmDatiGen.txtDbBanca.BackColor = Color.Yellow
+                End If
+                If Not ds.Tables("DatiGen").Columns("LungProgComp") Is Nothing Then
+                    .LungProgComp = Val(ds.Tables("DatiGen").Rows(0).Item("LungProgComp"))
+                    'If .LungProgComp = 0 Then
+                    '    ValoriNull = True
+                    'End If
+                Else
+                    ds.Tables("DatiGen").Columns.Add("LungProgComp")
+                    'StruttVariata = True
+                    'frmDatiGen.txtDbBanca.BackColor = Color.Yellow
+                End If
+                If Not ds.Tables("DatiGen").Columns("CodCDA") Is Nothing Then
+                    .CodCDA = (ds.Tables("DatiGen").Rows(0).Item("CodCDA"))
+                    If .CodCDA = "" Then
+                        ValoriNull = True
+                    End If
+                Else
+                    ds.Tables("DatiGen").Columns.Add("CodCDA")
+                    StruttVariata = True 
+                End If
+                 
 
                 'If Not ds.Tables("DatiGen").Columns("DocProv") Is Nothing Then
                 '    .DocProv = Val(ds.Tables("DatiGen").Rows(0).Item("DocProv")) = 1

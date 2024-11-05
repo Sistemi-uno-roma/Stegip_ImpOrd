@@ -22,6 +22,11 @@ Public Class frmDatiGen
             .DbGruppo = txtDbGruppo.Text
             .PathFileOr = txtPathFileOr.Text
 
+            .LungProgArt = updLungProgArt.Value
+            .LungProgComp = updLungProgComp.Value
+
+            .CodCDA = txtCodCda.Text
+
             '.DocProv = True
             'If chkDocProvORV.Checked Then
             '    .DocProv = True
@@ -32,7 +37,7 @@ Public Class frmDatiGen
 
 
 
-           
+
 
             '.ModelloArt = txtModelloArt.Text
             '.FilOutArt = txtFilOutArt.Text
@@ -126,7 +131,11 @@ Public Class frmDatiGen
 
             txtPathFileOr.Text = .PathFileOr
 
-         
+
+            updLungProgArt.Value = .LungProgArt
+            updLungProgComp.Value = .LungProgComp
+
+            txtCodCda.Text = .CodCDA
 
             'txtModelloArt.Text = .ModelloArt
             'txtFilOutArt.Text = .FilOutArt
