@@ -2871,6 +2871,8 @@ Public Class frmPrincipale
                 'Controllo Qta totali
 
                 '  If ConnettiAcc() Then
+                Dim TestoMsg As String = "La quantità totale non corrisponde alla quantità della riga:"
+                Dim ErrorQta As Boolean = False
                 Dim rs2 As New ADODB.Recordset
                 rs2.Open("SELECT ORV_TOT.IDR, ORV_TOT.Codart, ORV_TOT.Qta  FROM ORV_TOT WHERE (((ORV_TOT.IDR)<>0) AND ((ORV_TOT.Codart)<>'')) ", m_ConnAcc)
                 Dim QtaTotRiga As Double = 0
@@ -2893,19 +2895,27 @@ Public Class frmPrincipale
                         End If
                         rs3.Close()
                         If QtaRiga <> QtaTotRiga Then
-
-                            MsgBox("La quantità totale non corrisponde alla quantità della riga: NrRiga: " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga & vbCrLf &
-                                       "L'elaborazione non verrà completata", MsgBoxStyle.Critical)
-                            LogWrite("La quantità totale non corrisponde alla quantità della riga: NrRiga :  " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga)
-                            LeggiExcel = False
-                            Exit Do
+                            ErrorQta = True
+                            TestoMsg = TestoMsg & vbCrLf & "NrRiga: " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga
+                            'MsgBox("La quantità totale non corrisponde alla quantità della riga: NrRiga: " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga & vbCrLf &
+                            '           "L'elaborazione non verrà completata", MsgBoxStyle.Critical)
+                            'LogWrite("La quantità totale non corrisponde alla quantità della riga: NrRiga :  " & IdRiga & " QTA TOTALE:  " & QtaTotRiga & " Qta Rilevata: " & QtaRiga)
+                            'LeggiExcel = False
+                            'Exit Do
                         End If
                         rs2.MoveNext()
                     Loop
 
+                    TestoMsg = TestoMsg & vbCrLf & "L'elaborazione non verrà completata"
                 End If
                 rs2.Close()
                 rs2 = Nothing
+
+                If ErrorQta Then
+                    MsgBox(TestoMsg, MsgBoxStyle.Critical)
+                    LogWrite(TestoMsg)
+                    LeggiExcel = False
+                End If
                 '  End If
                 '   DisconnettiAcc()
                 ' ''salvo legami forn
