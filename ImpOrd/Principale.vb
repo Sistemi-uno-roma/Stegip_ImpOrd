@@ -27,7 +27,7 @@
         Dim GrCod_PF As String
         Dim GrCod_Comp As String
         Dim CodCDA As String
-
+        Dim NomeFoglio As String
         Dim CodSMT As String
         Dim CodTHT As String
 
@@ -260,8 +260,7 @@
 
 
             ds.Tables("DatiGen").Columns.Add("CodCDA")
-
-
+            ds.Tables("DatiGen").Columns.Add("NomeFoglio")
             'ds.Tables("DatiGen").Columns.Add("GrCod_PF")
             'ds.Tables("DatiGen").Columns.Add("GrCod_Comp")
             'ds.Tables("DatiGen").Columns.Add("CodCDA")
@@ -342,6 +341,9 @@
             NewRow.Item("LungProgArt") = .LungProgArt
             NewRow.Item("LungProgComp") = .LungProgComp
             NewRow.Item("CodCDA") = .CodCDA
+            NewRow.Item("NomeFoglio") = .NomeFoglio
+
+
             'NewRow.Item("DocProv") = IIf(.DocProv, 1, 0) 
 
 
@@ -613,7 +615,16 @@
                     ds.Tables("DatiGen").Columns.Add("CodCDA")
                     StruttVariata = True 
                 End If
-                 
+                If Not ds.Tables("DatiGen").Columns("NomeFoglio") Is Nothing Then
+                    .NomeFoglio = (ds.Tables("DatiGen").Rows(0).Item("NomeFoglio"))
+                    If .NomeFoglio = "" Then
+                        ValoriNull = True
+                    End If
+                Else
+                    ds.Tables("DatiGen").Columns.Add("NomeFoglio")
+                    StruttVariata = True
+                End If
+
 
                 'If Not ds.Tables("DatiGen").Columns("DocProv") Is Nothing Then
                 '    .DocProv = Val(ds.Tables("DatiGen").Rows(0).Item("DocProv")) = 1

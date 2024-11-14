@@ -235,7 +235,10 @@ Public Class frmPrincipale
     End Sub
     Private Sub cmdEsporta_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdEsporta.Click
         Try
-
+            If Trim(DatiGen.NomeFoglio) = "" Then
+                MsgBox("Configurare il nome del foglio excel da importare", MsgBoxStyle.Critical)
+                Exit Sub
+            End If
             If txtFileOr.Text <> "" And _
                 DatiGen.PathExport <> "" And _
                 DatiGen.DbGruppo <> "" Then
@@ -2458,7 +2461,16 @@ Public Class frmPrincipale
 
             Dim IndTab As Integer = 0
 
-            Dim nometb As String = ds.Tables(IndTab).TableName
+            Dim nometb As String = DatiGen.NomeFoglio
+
+            IndTab = ds.Tables.IndexOf(nometb) ' ds.Tables(IndTab).TableName
+            If IndTab = -1 Then
+                MsgBox("Foglio Excel " & nometb & " NON TROVATO", MsgBoxStyle.Critical)
+                LeggiExcel = False
+                AggiornaLbl("Foglio Excel " & nometb & " NON TROVATO")
+                Cursor = Cursors.Default
+                Exit Function
+            End If
 
             AggiornaLbl("Caricamento Dati ")
 
@@ -2742,37 +2754,38 @@ Public Class frmPrincipale
                                 AggiornaLbl("Caricamento OCL")
                                 IdT = 0
                                 For nrocl As Integer = 1 To 8
-
-                                    Dim IdTes As Integer = 0
-                                    Dim CodTerz As String = RowDTALL.Item("terz" & nrocl)
-                                    Dim mrow() As DataRow = dtDatiOCL.Select("CodTerz='" & CodTerz & "'")
-                                    If mrow.Length > 0 Then
-                                        IdTes = mrow(0).Item("ID_T")
-                                    Else
-                                        mrow = dtDatiOCL.Select("", "ID_T desc")
+                                    If Not ds.Tables(IndTab).Columns("terz" & nrocl) Is Nothing Then
+                                        Dim IdTes As Integer = 0
+                                        Dim CodTerz As String = RowDTALL.Item("terz" & nrocl)
+                                        Dim mrow() As DataRow = dtDatiOCL.Select("CodTerz='" & CodTerz & "'")
                                         If mrow.Length > 0 Then
-                                            IdTes = mrow(0).Item("ID_T") + 1
+                                            IdTes = mrow(0).Item("ID_T")
                                         Else
-                                            IdTes = 1
+                                            mrow = dtDatiOCL.Select("", "ID_T desc")
+                                            If mrow.Length > 0 Then
+                                                IdTes = mrow(0).Item("ID_T") + 1
+                                            Else
+                                                IdTes = 1
+                                            End If
                                         End If
+
+                                        RowDTOCL = dtDatiOCL.NewRow()
+                                        With RowDTOCL
+                                            .Item("DbGruppo") = DatiGen.DbGruppo
+                                            .Item("ID_T") = IdTes
+                                            .Item("CodTerz") = CodTerz
+                                            .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
+                                            .Item("DescLavorazione") = RowDTALL.Item("deslav" & nrocl)
+                                            .Item("Qta") = 1
+                                            .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
+
+                                            .Item("CodComp") = CodCompo
+                                            .Item("DescrCompo") = DescCompo
+                                            .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
+                                            .Item("codcommessa") = RowDTALL.Item("comm")
+                                        End With
+                                        dtDatiOCL.Rows.Add(RowDTOCL)
                                     End If
-
-                                    RowDTOCL = dtDatiOCL.NewRow()
-                                    With RowDTOCL
-                                        .Item("DbGruppo") = DatiGen.DbGruppo
-                                        .Item("ID_T") = IdTes
-                                        .Item("CodTerz") = CodTerz
-                                        .Item("CodLavorazione") = RowDTALL.Item("LAV" & nrocl)
-                                        .Item("DescLavorazione") = RowDTALL.Item("deslav" & nrocl)
-                                        .Item("Qta") = 1
-                                        .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
-
-                                        .Item("CodComp") = CodCompo
-                                        .Item("DescrCompo") = DescCompo
-                                        .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
-                                        .Item("codcommessa") = RowDTALL.Item("comm")
-                                    End With
-                                    dtDatiOCL.Rows.Add(RowDTOCL)
                                 Next
                             End If
                         Else

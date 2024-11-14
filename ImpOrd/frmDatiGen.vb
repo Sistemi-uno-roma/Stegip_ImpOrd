@@ -26,6 +26,7 @@ Public Class frmDatiGen
             .LungProgComp = updLungProgComp.Value
 
             .CodCDA = txtCodCda.Text
+            .NomeFoglio = txtNomeFoglio.Text
 
             '.DocProv = True
             'If chkDocProvORV.Checked Then
@@ -136,6 +137,7 @@ Public Class frmDatiGen
             updLungProgComp.Value = .LungProgComp
 
             txtCodCda.Text = .CodCDA
+            txtNomeFoglio.Text = .NomeFoglio
 
             'txtModelloArt.Text = .ModelloArt
             'txtFilOutArt.Text = .FilOutArt

@@ -71,6 +71,8 @@ Partial Class frmDatiGen
         Me.cmdSfogliaBat = New System.Windows.Forms.Button()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.txtFileBat = New System.Windows.Forms.TextBox()
+        Me.Label14 = New System.Windows.Forms.Label()
+        Me.txtNomeFoglio = New System.Windows.Forms.TextBox()
         Me.TabControl1.SuspendLayout()
         Me.TabPageGen.SuspendLayout()
         CType(Me.updLungProgArt, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -120,6 +122,8 @@ Partial Class frmDatiGen
         '
         'TabPageGen
         '
+        Me.TabPageGen.Controls.Add(Me.Label14)
+        Me.TabPageGen.Controls.Add(Me.txtNomeFoglio)
         Me.TabPageGen.Controls.Add(Me.Label13)
         Me.TabPageGen.Controls.Add(Me.txtCodCda)
         Me.TabPageGen.Controls.Add(Me.updLungProgArt)
@@ -530,6 +534,22 @@ Partial Class frmDatiGen
         Me.txtFileBat.Size = New System.Drawing.Size(488, 20)
         Me.txtFileBat.TabIndex = 4
         '
+        'Label14
+        '
+        Me.Label14.AutoSize = True
+        Me.Label14.Location = New System.Drawing.Point(240, 271)
+        Me.Label14.Name = "Label14"
+        Me.Label14.Size = New System.Drawing.Size(81, 13)
+        Me.Label14.TabIndex = 79
+        Me.Label14.Text = "Nome Foglio xls"
+        '
+        'txtNomeFoglio
+        '
+        Me.txtNomeFoglio.Location = New System.Drawing.Point(344, 268)
+        Me.txtNomeFoglio.Name = "txtNomeFoglio"
+        Me.txtNomeFoglio.Size = New System.Drawing.Size(121, 20)
+        Me.txtNomeFoglio.TabIndex = 78
+        '
         'frmDatiGen
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -606,4 +626,6 @@ Partial Class frmDatiGen
     Friend WithEvents Label12 As Label
     Friend WithEvents Label13 As System.Windows.Forms.Label
     Friend WithEvents txtCodCda As System.Windows.Forms.TextBox
+    Friend WithEvents Label14 As Label
+    Friend WithEvents txtNomeFoglio As TextBox
 End Class
