@@ -2517,8 +2517,10 @@ Public Class frmPrincipale
                                 Try
                                     Dim NomeCampo As String = Trim(NoNull(ds.Tables(IndTab).Columns(nrc).ColumnName))
                                     Dim valore As String = Trim(NoNull(ds.Tables(IndTab).Rows(r).Item(NomeCampo)))
-                                    .Item(NomeCampo) = valore
-                                    '  .Item(nrc + 2) = Trim(NoNull(ds.Tables(IndTab). Rows(r).Item(nrc)))
+                                    If Not dtDatiALL.Columns(NomeCampo) Is Nothing Then
+                                        .Item(NomeCampo) = valore
+                                        '  .Item(nrc + 2) = Trim(NoNull(ds.Tables(IndTab). Rows(r).Item(nrc)))
+                                    End If
                                 Catch ex As Exception
                                     MsgBox("Errore " & ex.Message & " Colonna: " & nrc & " - " & " Riga " & r)
                                 End Try
@@ -2570,7 +2572,6 @@ Public Class frmPrincipale
                                 NrRiga += 1
                                 'articoli
                                 With RowDTAna
-
                                     .Item("DbGruppo") = DatiGen.DbGruppo
                                     .Item("Codart") = Codart
                                     .Item("NrRiga") = NrRiga
