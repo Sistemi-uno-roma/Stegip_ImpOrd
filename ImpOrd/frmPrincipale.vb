@@ -1937,7 +1937,7 @@ Public Class frmPrincipale
     '.Item("NOTE")=  
 
     Private Function GetVarianti(ByRef dtDatiArtConfVar As DataTable, ByVal CodArt As String, ByVal VarianteIn As String,
-                                 ByVal NrVar As String, ByVal CodTipoVar As String, ByVal NrRiga As Long) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
+                                 ByVal NrVar As String, ByVal CodTipoVar As String, ByVal NrRiga As Long, Optional ByVal QtaTot As Double = 0) As String ' , ByRef Varianti() As String, ByRef Qta() As String, ByRef Variante As String) As String
 
         Dim Appo() As String = Split(Trim(VarianteIn), ";")
         For x As Integer = 0 To Appo.Length - 1
@@ -1961,7 +1961,11 @@ Public Class frmPrincipale
                         .Item("Variante") = varqta(1)
                         .Item("Posizione") = NrVar + 1
                         .Item("CodTipoVariante") = CodTipoVar ' gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
-                        .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                        If QtaTot = 0 Then
+                            .Item("Qta") = varqta(0) 'gettipovarEs(RowDTALL.Item("Codart"), Var(nrvar)) 
+                        Else
+                            .Item("Qta") = QtaTot
+                        End If
                     End With
                     dtDatiArtConfVar.Rows.Add(RowDTArtConfVar)
 
@@ -2614,7 +2618,17 @@ Public Class frmPrincipale
                                 Var(1) = RowDTALL.Item("Var2")
                                 Var(2) = RowDTALL.Item("Var3")
 
-
+                                Dim EsisteQta As Boolean = False
+                                For i As Integer = 0 To 2
+                                    If Var(i).Contains("-") = True Then
+                                        EsisteQta = True
+                                        Exit For
+                                    End If
+                                Next
+                                Dim QtaTot As Double = Val(Replace(RowDTALL.Item("qtatot"), ",", "."))
+                                If EsisteQta Then
+                                    QtaTot = 0
+                                End If
 
                                 Dim VarCompo(2) As String
                                 VarCompo(0) = RowDTALL.Item("Var1comp")
@@ -2626,6 +2640,20 @@ Public Class frmPrincipale
                                 If VarCompo(1) = "" Then VarCompo(1) = Var(1)
                                 If VarCompo(2) = "" Then VarCompo(2) = Var(2)
 
+
+
+                                Dim EsisteQtaCompo As Boolean = False
+                                For i As Integer = 0 To 2
+                                    If VarCompo(i).Contains("-") = True Then
+                                        EsisteQtaCompo = True
+                                        Exit For
+                                    End If
+                                Next
+
+                                Dim QtaTotCompo As Double = QtaTot
+                                If EsisteQtaCompo Then
+                                    QtaTotCompo = 0
+                                End If
                                 'Var(3) = RowDTALL.Item("Var4")
                                 'Var(4) = RowDTALL.Item("Var5")
 
@@ -2640,10 +2668,10 @@ Public Class frmPrincipale
                                         Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
                                         If codtipovar_compo = "" Then codtipovar_compo = codtipovar
                                         If Var(nrvar) <> "" Then
-                                            GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga) ', Varianti, Qta, Variante)
+                                            GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga, QtaTot) ', Varianti, Qta, Variante)
                                         End If
                                         If VarCompo(nrvar) <> "" Then
-                                            GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga) ', VariantiComp, QtaComp, VarianteCom)
+                                            GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga, QtaTotCompo) ', VariantiComp, QtaComp, VarianteCom)
                                         End If
                                     Next
 
