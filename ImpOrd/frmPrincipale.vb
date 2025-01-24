@@ -2317,7 +2317,7 @@ Public Class frmPrincipale
 
             End Select
 
-            'mprovider = "Microsoft.Jet.OLEDB.4.0"
+            mprovider = "Microsoft.Jet.OLEDB.4.0"
 
             ' conStr = String.Format(conStr, mprovider, NomeFile, 1)
             'conStr = "Provider=" & mprovider & ";Data Source=" & NomeFile & ";Extended Properties='Excel 8.0;HDR=" & 1 & "'"
