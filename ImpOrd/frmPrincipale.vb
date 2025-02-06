@@ -2057,34 +2057,34 @@ Public Class frmPrincipale
             'If ConnettiEs() Then
             Dim rs As New ADODB.Recordset
 
-                If CodCompoFile <> "" Then
-                    rs = New ADODB.Recordset
-                    rs.Open("select CodArt  from ArtDatiAnagrafiche where dbgruppo='" & DatiGen.DbGruppo &
+            If CodCompoFile <> "" Then
+                rs = New ADODB.Recordset
+                rs.Open("select CodArt  from ArtDatiAnagrafiche where dbgruppo='" & DatiGen.DbGruppo &
                             "' and TipoAnagrafica=2 and codclifor ='" & CodForn & "' and codartclifor='" & CodCompoFile & "'  ", m_ConnEs)
+                If Not rs.EOF Then
+                    CodCompo = rs("Codart").Value
+                End If
+                rs.Close()
+
+                If CodCompo = "" Then
+
+                    rs = New ADODB.Recordset
+                    rs.Open("select CodArt  from artanagrafica where dbgruppo='" & DatiGen.DbGruppo &
+                                "' and  AcqCodForAbituale ='" & CodForn & "' and CodArtProduttore='" & CodCompoFile & "'  ", m_ConnEs)
                     If Not rs.EOF Then
                         CodCompo = rs("Codart").Value
                     End If
                     rs.Close()
 
-                    If CodCompo = "" Then
-
-                        rs = New ADODB.Recordset
-                        rs.Open("select CodArt  from artanagrafica where dbgruppo='" & DatiGen.DbGruppo &
-                                "' and  AcqCodForAbituale ='" & CodForn & "' and CodArtProduttore='" & CodCompoFile & "'  ", m_ConnEs)
-                        If Not rs.EOF Then
-                            CodCompo = rs("Codart").Value
-                        End If
-                        rs.Close()
-
-                    End If
-                Else
-                    CodCompo = ""
                 End If
+            Else
+                CodCompo = ""
+            End If
 
-                'non ho trovato il codice articolo dal codice fornitore : lo genero
-                If CodCompo = "" Then
-                    CodCompo = GetCodice_FUll(SchemaCodCompo, ModelloCompo, CodArt, "NEU")
-                End If
+            'non ho trovato il codice articolo dal codice fornitore : lo genero
+            If CodCompo = "" Then
+                CodCompo = GetCodice_FUll(SchemaCodCompo, ModelloCompo, CodArt, "NEU")
+            End If
             'End If
             GetCodiceComponente = CodCompo
         Catch ex As Exception
@@ -2496,6 +2496,7 @@ Public Class frmPrincipale
             Dim CodCompo As String = ""
             Dim DescCompo As String = ""
             Dim CodForn As String = ""
+            Dim GestCompo As Boolean = False
             For r As Integer = 1 To ds.Tables(IndTab).Rows.Count - 1
                 Try
                     Dim RowDTALL As DataRow = dtDatiALL.NewRow
@@ -2539,6 +2540,7 @@ Public Class frmPrincipale
                             AggiornaLbl("Caricamento articoli")
 
                             If Trim(RowDTALL.Item("Codart")) <> "" Then
+                                'nuovo articolo svuoto le variabili del precedente altrimenti è stesso articolo della riga precedente con varianti diverse
                                 CodArtOr = ""
                                 Codart = ""
                                 descart = ""
@@ -2550,6 +2552,7 @@ Public Class frmPrincipale
                                 CodCompo = ""
                                 DescCompo = ""
                                 CodForn = ""
+                                GestCompo = False
 
                                 CodArtOr = RowDTALL.Item("Codart")
                                 ModelloArt = RowDTALL.Item("modart")
@@ -2567,8 +2570,16 @@ Public Class frmPrincipale
                                 CodCompoForn = RowDTALL.Item("codcomp")
 
                                 CodForn = RowDTALL.Item("codfor")
-                                CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, CodArtOr, CodForn)
-                                If CodCompoForn = "" Then CodCompoForn = CodCompo
+                                If Trim(CodCompoForn) <> "" Or Trim(DescCompo) <> "" Then
+                                    CodCompo = GetCodiceComponente(CodCompoForn, SchemaCodCompo, ModelloCompo, CodArtOr, CodForn)
+                                    If CodCompoForn = "" Then CodCompoForn = CodCompo
+                                    GestCompo = True
+                                End If
+
+                                'If Trim(CodCompo) <> "" Then
+                                '    GestCompo = True
+                                'End If
+
                             End If
 
                             If CodArtOr <> "" Then
@@ -2587,28 +2598,37 @@ Public Class frmPrincipale
                                     .Item("CodForn") = ""
                                     .Item("CodArtForn") = ""
                                     .Item("NomeDB") = Codart
+
+                                    If GestCompo = False Then 'se non c'è il componente codice fornitore lo metto su articolo principale
+                                        .Item("CodForn") = CodForn
+                                        .Item("CodArtForn") = Codart
+                                        .Item("NomeDB") = ""
+                                    End If
+
                                 End With
                                 dtDatiArt.Rows.Add(RowDTAna)
 
                                 'componente
-                                AggiornaLbl("Caricamento Componenti")
+                                If GestCompo Then
+                                    AggiornaLbl("Caricamento Componenti")
 
 
-                                RowDTAna = dtDatiArt.NewRow
-                                With RowDTAna
-                                    .Item("DbGruppo") = DatiGen.DbGruppo
-                                    .Item("Codart") = CodCompo
-                                    .Item("NrRiga") = NrRiga
-                                    .Item("Descrizione") = DescCompo
-                                    .Item("GruppoCodifica") = SchemaCodCompo
-                                    .Item("TipoArt") = "MP"
-                                    .Item("Um") = ""
-                                    .Item("CodiceModello") = ModelloCompo
-                                    .Item("CodForn") = CodForn
-                                    .Item("CodArtForn") = CodCompoForn
-                                    .Item("NomeDB") = Codart
-                                End With
-                                dtDatiArt.Rows.Add(RowDTAna)
+                                    RowDTAna = dtDatiArt.NewRow
+                                    With RowDTAna
+                                        .Item("DbGruppo") = DatiGen.DbGruppo
+                                        .Item("Codart") = CodCompo
+                                        .Item("NrRiga") = NrRiga
+                                        .Item("Descrizione") = DescCompo
+                                        .Item("GruppoCodifica") = SchemaCodCompo
+                                        .Item("TipoArt") = "MP"
+                                        .Item("Um") = ""
+                                        .Item("CodiceModello") = ModelloCompo
+                                        .Item("CodForn") = CodForn
+                                        .Item("CodArtForn") = CodCompoForn
+                                        .Item("NomeDB") = Codart
+                                    End With
+                                    dtDatiArt.Rows.Add(RowDTAna)
+                                End If
 
                                 'varianti 
                                 AggiornaLbl("Caricamento Varianti")
@@ -2631,29 +2651,33 @@ Public Class frmPrincipale
                                 End If
 
                                 Dim VarCompo(2) As String
-                                VarCompo(0) = RowDTALL.Item("Var1comp")
-                                VarCompo(1) = RowDTALL.Item("Var2comp")
-                                VarCompo(2) = RowDTALL.Item("Var3comp")
+                                Dim QtaTotCompo As Double = 0
+                                If GestCompo Then
+                                    VarCompo(0) = RowDTALL.Item("Var1comp")
+                                    VarCompo(1) = RowDTALL.Item("Var2comp")
+                                    VarCompo(2) = RowDTALL.Item("Var3comp")
 
 
-                                If VarCompo(0) = "" Then VarCompo(0) = Var(0)
-                                If VarCompo(1) = "" Then VarCompo(1) = Var(1)
-                                If VarCompo(2) = "" Then VarCompo(2) = Var(2)
+                                    If VarCompo(0) = "" Then VarCompo(0) = Var(0)
+                                    If VarCompo(1) = "" Then VarCompo(1) = Var(1)
+                                    If VarCompo(2) = "" Then VarCompo(2) = Var(2)
 
 
 
-                                Dim EsisteQtaCompo As Boolean = False
-                                For i As Integer = 0 To 2
-                                    If VarCompo(i).Contains("-") = True Then
-                                        EsisteQtaCompo = True
-                                        Exit For
+                                    Dim EsisteQtaCompo As Boolean = False
+                                    For i As Integer = 0 To 2
+                                        If VarCompo(i).Contains("-") = True Then
+                                            EsisteQtaCompo = True
+                                            Exit For
+                                        End If
+                                    Next
+
+                                    QtaTotCompo = QtaTot
+                                    If EsisteQtaCompo Then
+                                        QtaTotCompo = 0
                                     End If
-                                Next
-
-                                Dim QtaTotCompo As Double = QtaTot
-                                If EsisteQtaCompo Then
-                                    QtaTotCompo = 0
                                 End If
+
                                 'Var(3) = RowDTALL.Item("Var4")
                                 'Var(4) = RowDTALL.Item("Var5")
 
@@ -2665,13 +2689,16 @@ Public Class frmPrincipale
                                     'Dim Variante As String = ""
                                     For nrvar As Integer = 0 To Var.Length - 1
                                         Dim codtipovar As String = GtCodTipoVariante(ModelloArt, SchemaCodArt, nrvar + 1)
-                                        Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
-                                        If codtipovar_compo = "" Then codtipovar_compo = codtipovar
                                         If Var(nrvar) <> "" Then
                                             GetVarianti(dtDatiArtConfVar, Codart, Var(nrvar), nrvar, codtipovar, NrRiga, QtaTot) ', Varianti, Qta, Variante)
                                         End If
-                                        If VarCompo(nrvar) <> "" Then
-                                            GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga, QtaTotCompo) ', VariantiComp, QtaComp, VarianteCom)
+
+                                        If GestCompo Then
+                                            Dim codtipovar_compo As String = GtCodTipoVariante(ModelloCompo, SchemaCodCompo, nrvar + 1)
+                                            If codtipovar_compo = "" Then codtipovar_compo = codtipovar
+                                            If VarCompo(nrvar) <> "" Then
+                                                GetVarianti(dtDatiArtConfVar, CodCompo, VarCompo(nrvar), nrvar, codtipovar_compo, NrRiga, QtaTotCompo) ', VariantiComp, QtaComp, VarianteCom)
+                                            End If
                                         End If
                                     Next
 
@@ -2711,20 +2738,20 @@ Public Class frmPrincipale
 
 
 
-                                'Distinta
+                                'Distinta 
+                                If GestCompo Then
+                                    AggiornaLbl("Caricamento Distinta")
+                                    RowDTDBase = dtDatiDB.NewRow
+                                    With RowDTDBase
 
+                                        .Item("DbGruppo") = DatiGen.DbGruppo
+                                        .Item("CodDb") = Codart
+                                        .Item("CodArtCompo") = CodCompo
+                                        .Item("Qta") = 1
+                                    End With
+                                    dtDatiDB.Rows.Add(RowDTDBase)
 
-                                AggiornaLbl("Caricamento Distinta")
-                                RowDTDBase = dtDatiDB.NewRow
-                                With RowDTDBase
-
-                                    .Item("DbGruppo") = DatiGen.DbGruppo
-                                    .Item("CodDb") = Codart
-                                    .Item("CodArtCompo") = CodCompo
-                                    .Item("Qta") = 1
-                                End With
-                                dtDatiDB.Rows.Add(RowDTDBase)
-
+                                End If
 
                                 Dim IdT As Integer = 1
 
@@ -2769,9 +2796,16 @@ Public Class frmPrincipale
                                     .Item("ID_T") = IdT
                                     .Item("IDR") = NrRiga
                                     .Item("CodForn") = CodForn
-                                    .Item("CodCompo") = CodCompoForn
-                                    .Item("DesCompo") = DescCompo
-                                    .Item("VarCompo") = ""
+
+                                    If GestCompo Then
+                                        .Item("CodCompo") = CodCompoForn
+                                        .Item("DesCompo") = DescCompo
+                                        .Item("VarCompo") = ""
+                                    Else
+                                        .Item("CodCompo") = Codart
+                                        .Item("DesCompo") = descart
+                                        .Item("VarCompo") = ""
+                                    End If
                                     .Item("Qta") = 1
                                     .Item("Costo") = RowDTALL.Item("costo")
                                     .Item("codcommessa") = RowDTALL.Item("comm")
@@ -2808,8 +2842,13 @@ Public Class frmPrincipale
                                             .Item("Qta") = 1
                                             .Item("Costo") = Val(RowDTALL.Item("costolav" & nrocl))
 
-                                            .Item("CodComp") = CodCompo
-                                            .Item("DescrCompo") = DescCompo
+                                            If GestCompo Then
+                                                .Item("CodComp") = CodCompo
+                                                .Item("DescrCompo") = DescCompo
+                                            Else
+                                                .Item("CodComp") = Codart
+                                                .Item("DescrCompo") = descart
+                                            End If
                                             .Item("TotQtaRiga") = RowDTALL.Item("QTATOT")
                                             .Item("codcommessa") = RowDTALL.Item("comm")
                                         End With
